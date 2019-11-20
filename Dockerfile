@@ -1,6 +1,6 @@
 FROM python:3.7.5
 
-WORKDIR /usr/src/app 
+WORKDIR /usr/src/app
 ENV FLASK_APP=main.py \
     FLASK_ENV=development \
     FLASK_RUN_PORT=8080
