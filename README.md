@@ -33,11 +33,10 @@ docker run -p 8080:8080 -v $(pwd):/usr/src/app ahci
 3. Run your app:
 
    ```bash
-   FLASK_APP=main.py \
-       FLASK_ENV=development \
-       FLASK_RUN_PORT=8080 \
-       flask run
+      python main.py
    ```
+
+   > Or simply run the start.sh script
 
 #### For powershell (Windows 🎉)
 
@@ -46,8 +45,8 @@ docker run -p 8080:8080 -v $(pwd):/usr/src/app ahci
 2. See 2. at [For bash](#for-bash)
 
    ```powershell
-       # within the app directory
-       $env:FLASK_APP="main.py"; $env:FLASK_ENV="development"; $env:FLASK_RUN_PORT=8080; flask run
+      # within the app directory
+      python main.py
    ```
 
    > Or simply run the start.ps1 script
