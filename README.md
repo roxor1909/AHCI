@@ -33,6 +33,9 @@ docker run -p 8080:8080 -v $(pwd):/usr/src/app ahci
 3. Run your app:
 
    ```bash
+      export AHCI_DEV=true \
+         AHCI_PORT=8080 \
+         AHCI_USE_RELOADER=true
       python main.py
    ```
 
@@ -46,6 +49,9 @@ docker run -p 8080:8080 -v $(pwd):/usr/src/app ahci
 
    ```powershell
       # within the app directory
+      $env:AHCI_DEV=$true
+      $env:AHCI_PORT=8080
+      $env:AHCI_USE_RELOADER=$true
       python main.py
    ```
 
