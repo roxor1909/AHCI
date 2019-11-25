@@ -7,11 +7,6 @@ import io
 import json
 from PIL import Image
 
-import cv2
-import matplotlib.pyplot as plt
-import cvlib as cv
-from cvlib.object_detection import draw_bbox
-
 app = Flask(__name__)
 # app.config['SECRET_KEY'] = 'supersecretkey'
 socketio = SocketIO(app)
@@ -34,11 +29,6 @@ def handle_my_custom_event(inJson, methods=['POST']):
     imgData = base64.b64decode(val)
     img = Image.open(io.BytesIO(imgData))
     width, height = img.size
-
-    bbox, label, conf = cv.detect_common_objects(img)
-    print(bbox)
-    print(label)
-    print(conf)
 
     rd = {}
     rd['image'] = {}

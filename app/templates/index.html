@@ -1,10 +1,5 @@
-<html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>MirrorPi</title>
+    <title>Streamer</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
     <script>
         // trys to connect to the host that serves the page by default
@@ -22,30 +17,38 @@
 </head>
 
 <body>
-    <canvas id="image_canvas" height="480px" width="640px"></canvas>
-    <button onclick="sendMessage()">Send message</button>
+    <video autoplay></video>
     <div id="responses"></div>
     <script>
-        const canv = document.getElementById('image_canvas');
-        const ctx = canv.getContext('2d');
+        // get video dom element
+        const video = document.querySelector('video');
 
-        // Load an image an put it to a canvas
-        const i = new Image()
-        i.crossOrigin="anonymus"
-        i.onload = () => {
-            ctx.drawImage(i, 0, 0);
+        // request access to webcam
+        navigator.mediaDevices.getUserMedia({ video: { width: 426, height: 240 } }).then((stream) => video.srcObject = stream);
+
+        // returns a frame encoded in base64
+        const getFrame = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            const data = canvas.toDataURL();
+            return data;
         }
-        i.src = "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Toothbrush_x3_20050716_001.jpg/640px-Toothbrush_x3_20050716_001.jpg";
 
-
-        const sendMessage = () => {
-            socket.emit('camera_frame', {framedata: canv.toDataURL()});
+        const sendMessage = (data) => {
+            socket.emit('camera_frame', {framedata: data});
         }
 
         socket.on('response_message', (msg) => {
             document.getElementById("responses").appendChild(document.createTextNode(msg))
         });
-    </script>
+
+        setInterval(() => {
+            sendMessage(getFrame());
+        }, 1000 );
+
+        </script>
 </body>
 
 </html>
