@@ -2,6 +2,16 @@ import os
 from flask import Flask, render_template
 from flask_socketio import SocketIO
 
+import base64
+import io
+import json
+from PIL import Image
+
+import cv2
+import matplotlib.pyplot as plt
+import cvlib as cv
+from cvlib.object_detection import draw_bbox
+
 app = Flask(__name__)
 # app.config['SECRET_KEY'] = 'supersecretkey'
 socketio = SocketIO(app)
@@ -10,11 +20,34 @@ socketio = SocketIO(app)
 def root_route():
     return render_template("index.html")
 
+@socketio.on('connect')
+def on_connect():
+    print('Client connected')
 
-@socketio.on('my_event')
-def handle_my_custom_event(json, methods=['POST']):
-    print('received my event: ' + str(json))
-    socketio.emit('response_messagee', str(json))
+@socketio.on('disconnect')
+def on_disconnect():
+    print('Client disconnected')
+
+@socketio.on('camera_frame')
+def handle_my_custom_event(inJson, methods=['POST']):
+    val = inJson['framedata'].split(',')[1]
+    imgData = base64.b64decode(val)
+    img = Image.open(io.BytesIO(imgData))
+    width, height = img.size
+
+    bbox, label, conf = cv.detect_common_objects(img)
+    print(bbox)
+    print(label)
+    print(conf)
+
+    rd = {}
+    rd['image'] = {}
+    rd['image']['width'] = width
+    rd['image']['height'] = height
+
+    rj = json.dumps(rd)
+    socketio.emit('response_message', rj)
+
 
 
 def try_get_env(name):
