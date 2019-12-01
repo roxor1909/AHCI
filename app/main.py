@@ -66,5 +66,5 @@ if __name__ == '__main__':
     else:
         use_reloader = bool(use_reloader)
 
-    print('Starting sutff')
-    socketio.run(app, debug=debug, port=port, use_reloader=use_reloader)
+    print('Starting server')
+    socketio.run(app, host='0.0.0.0', debug=debug, port=port, use_reloader=use_reloader)
