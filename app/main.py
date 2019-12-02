@@ -7,6 +7,8 @@ import io
 import json
 from PIL import Image
 
+from layoutCalculation import *
+
 app = Flask(__name__)
 # app.config['SECRET_KEY'] = 'supersecretkey'
 socketio = SocketIO(app)
@@ -29,16 +31,7 @@ def handle_my_custom_event(inJson, methods=['POST']):
     imgData = base64.b64decode(val)
     img = Image.open(io.BytesIO(imgData))
     width, height = img.size
-
-    rd = {}
-    rd['image'] = {}
-    rd['image']['width'] = width
-    rd['image']['height'] = height
-
-    rj = json.dumps(rd)
-    socketio.emit('response_message', rj)
-
-
+    socketio.emit('response_message', getPanelPositions())
 
 def try_get_env(name):
     try:
