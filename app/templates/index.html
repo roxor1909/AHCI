@@ -7,19 +7,39 @@
 
         socket.on('connection', (socket) => {
             console.log('a user connected');
-            socket.emit('camera_frame', {data: 'I\'m connected!'});
+            socket.emit('camera_frame', { data: 'I\'m connected!' });
 
             socket.on('disconnect', () => {
                 console.log('user disconnected');
             });
         });
     </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
 <body>
+
+    <canvas id="canvas"></canvas>
+
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSgl1xvVrKLnSEwGqMDMxUIY8VexNQ9WLMOKwhgSevscEnVcwsT&s"
+        id="clock" hidden>
+    <img src="https://ak5.picdn.net/shutterstock/videos/16504675/thumb/4.jpg" id="graph" hidden>
+    <img src="https://icon-library.net/images/achievement-icon/achievement-icon-16.jpg" id="achievements" hidden>
+
     <video autoplay></video>
-    <div id="responses"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/3.5.0/fabric.min.js"></script>
     <script>
+
+        let fabricCanvas;
+        let lastXPositionClock = 0;
+        let lastYPositionClock = 0;
+        let lastXPositionGraph = 0;
+        let lastYPositionGraph = 0;
+        let lastXPositionAchievements = 0;
+        let lastYPositionAchievements = 0;
+
+
         // get video dom element
         const video = document.querySelector('video');
 
@@ -37,18 +57,78 @@
         }
 
         const sendMessage = (data) => {
-            socket.emit('camera_frame', {framedata: data});
+            socket.emit('camera_frame', { framedata: data });
         }
 
         socket.on('response_message', (msg) => {
-            document.getElementById("responses").appendChild(document.createTextNode(msg))
+            const json = JSON.parse(msg);
+
+            if (lastXPositionClock != json.clock.x || lastYPositionClock != json.clock.y) {
+                lastXPositionClock = json.clock.x;
+                lastYPositionClock = json.clock.y;
+                fabricCanvas.item(0).animate('left', json.clock.x, {
+                    onChange: fabricCanvas.renderAll.bind(fabricCanvas)
+                });
+                fabricCanvas.item(0).animate('top', json.clock.y, {
+                    onChange: fabricCanvas.renderAll.bind(fabricCanvas)
+                });
+            }
+            if (lastXPositionGraph != json.graph.x || lastYPositionGraph != json.graph.y) {
+                lastXPositionGraph = json.graph.x;
+                lastYPositionGraph = json.graph.y;
+                fabricCanvas.item(1).animate('left', json.graph.x, {
+                    onChange: fabricCanvas.renderAll.bind(fabricCanvas)
+                });
+                fabricCanvas.item(1).animate('top', json.graph.y, {
+                    onChange: fabricCanvas.renderAll.bind(fabricCanvas)
+                });
+            }
+            if (lastXPositionAchievements != json.achievements.x || lastYPositionAchievements != json.achievements.y) {
+                lastXPositionAchievements = json.achievements.x;
+                lastYPositionAchievements = json.achievements.y;
+                fabricCanvas.item(2).animate('left', json.achievements.x, {
+                    onChange: fabricCanvas.renderAll.bind(fabricCanvas)
+                });
+                fabricCanvas.item(2).animate('top', json.achievements.y, {
+                    onChange: fabricCanvas.renderAll.bind(fabricCanvas)
+                });
+            }
         });
 
         setInterval(() => {
             sendMessage(getFrame());
-        }, 1000 );
+        }, 1000);
 
-        </script>
+        function initializeCanvas() {
+            document.getElementById('canvas').width = window.innerWidth;
+            document.getElementById('canvas').height = window.innerHeight;
+            fabricCanvas = new fabric.Canvas('canvas')
+
+            const clockImage = document.getElementById('clock');
+            const clockInstance = new fabric.Image(clockImage, {
+                left: 0,
+                top: 0
+            });
+            const graphImage = document.getElementById('graph');
+            const graphInstance = new fabric.Image(graphImage, {
+                left: 500,
+                top: 0
+            });
+            const achievementsImage = document.getElementById('achievements');
+            const achievementsInstance = new fabric.Image(achievementsImage, {
+                left: 1500,
+                top: 0
+            });
+            fabricCanvas.add(clockInstance);
+            fabricCanvas.add(graphInstance);
+            fabricCanvas.add(achievementsInstance);
+        }
+
+        (function () {
+            initializeCanvas();
+        })();
+
+    </script>
 </body>
 
 </html>
