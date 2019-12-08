@@ -67,9 +67,11 @@
                 lastXPositionClock = json.clock.x;
                 lastYPositionClock = json.clock.y;
                 fabricCanvas.item(0).animate('left', json.clock.x, {
+                    duration: 1000,
                     onChange: fabricCanvas.renderAll.bind(fabricCanvas)
                 });
                 fabricCanvas.item(0).animate('top', json.clock.y, {
+                    duration: 1000,
                     onChange: fabricCanvas.renderAll.bind(fabricCanvas)
                 });
             }
@@ -77,9 +79,11 @@
                 lastXPositionGraph = json.graph.x;
                 lastYPositionGraph = json.graph.y;
                 fabricCanvas.item(1).animate('left', json.graph.x, {
+                    duration: 1000,
                     onChange: fabricCanvas.renderAll.bind(fabricCanvas)
                 });
                 fabricCanvas.item(1).animate('top', json.graph.y, {
+                    duration: 1000,
                     onChange: fabricCanvas.renderAll.bind(fabricCanvas)
                 });
             }
@@ -87,9 +91,11 @@
                 lastXPositionAchievements = json.achievements.x;
                 lastYPositionAchievements = json.achievements.y;
                 fabricCanvas.item(2).animate('left', json.achievements.x, {
+                    duration: 1000,
                     onChange: fabricCanvas.renderAll.bind(fabricCanvas)
                 });
                 fabricCanvas.item(2).animate('top', json.achievements.y, {
+                    duration: 1000,
                     onChange: fabricCanvas.renderAll.bind(fabricCanvas)
                 });
             }
