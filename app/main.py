@@ -23,8 +23,10 @@ interpreter = None
 input_height = 0
 input_width = 0
 
+CAMERA_WIDTH = 640
+CAMERA_HEIGHT = 480
+
 app = Flask(__name__)
-# app.config['SECRET_KEY'] = 'supersecretkey'
 socketio = SocketIO(app)
 
 
@@ -44,19 +46,21 @@ def on_disconnect():
 
 
 @socketio.on('camera_frame')
-def handle_my_custom_event(inJson, methods=['POST']):
-    val = inJson['framedata'].split(',')[1]
-    imgData = base64.b64decode(val)
-    img = Image.open(io.BytesIO(imgData))
+def handle_camera_frame_event(inJson, methods=['POST']):
 
-    img = img.convert('RGB').resize(
-        (input_width, input_height), Image.ANTIALIAS)
+    if 'framedata' in inJson:
+        print('framedata')
+        val = inJson['framedata'].split(',')[1]
+        imgData = base64.b64decode(val)
+        img = Image.open(io.BytesIO(imgData))
 
-    results = detect_objects(interpreter, img, threshold=0.4)
+        img = img.convert('RGB').resize(
+            (input_width, input_height), Image.ANTIALIAS)
 
-    returnJson = json.dumps(results, separators=(',', ':'), sort_keys=True, indent=4)
+        results = detect_objects(interpreter, img, threshold=0.6)
+        returnJson = json.dumps(results, separators=(',', ':'), sort_keys=True, indent=4)
 
-    socketio.emit('response_message', returnJson)
+        socketio.emit('response_message', returnJson)
 
 
 def try_get_env(name):
@@ -106,16 +110,27 @@ def detect_objects(interpreter, image, threshold):
     classes = get_output_tensor(interpreter, 1)
     scores = get_output_tensor(interpreter, 2)
     count = int(get_output_tensor(interpreter, 3))
-
-    # actual_width, acutal_height = img.size
     
-
     results = []
     for i in range(count):
         if scores[i] >= threshold:
+            
+            ymin, xmin, ymax, xmax = boxes[i]
+    
+            # calculate actual points
+            xmin = int(xmin * CAMERA_WIDTH)
+            xmax = int(xmax * CAMERA_WIDTH)
+            ymin = int(ymin * CAMERA_HEIGHT)
+            ymax = int(ymax * CAMERA_HEIGHT)
+
             result = {
-                'bounding_box': boxes[i].tolist(),
-                'class_id': str(int(classes[i])),
+                'bounding_box': {
+                    'xmin': xmin,
+                    'xmax': xmax,
+                    'ymin': ymin,
+                    'ymax': ymax
+                },
+                'class': labels[int(classes[i])],
                 'score': str(scores[i])
             }
             results.append(result)
@@ -152,8 +167,7 @@ if __name__ == '__main__':
         object_detection_static_path, 'detect.tflite'))
     interpreter.allocate_tensors()
 
-    _, input_height, input_width, _ = interpreter.get_input_details()[
-        0]['shape']
+    _, input_height, input_width, _ = interpreter.get_input_details()[0]['shape']
 
     print('Starting sutff')
     socketio.run(app, debug=debug, port=port, use_reloader=use_reloader)

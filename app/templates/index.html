@@ -2,12 +2,16 @@
     <title>Streamer</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
     <script>
+        const camerWidth = 640;
+        const camerHeight = 480;
+        
+
         // trys to connect to the host that serves the page by default
         const socket = io();
 
         socket.on('connection', (socket) => {
             console.log('a user connected');
-            socket.emit('camera_frame', {data: 'I\'m connected!'});
+            socket.emit('camera_frame', {camerWidth: camerWidth, camerHeight: camerHeight});
 
             socket.on('disconnect', () => {
                 console.log('user disconnected');
@@ -18,13 +22,19 @@
 
 <body>
     <video autoplay></video>
+    <canvas id="reCanvas" ></canvas>
     <div id="responses"></div>
     <script>
         // get video dom element
         const video = document.querySelector('video');
 
+        const canv = document.getElementById('reCanvas');
+        canv.width = camerWidth;
+        canv.height = camerHeight;
+        const ctx = canv.getContext('2d');
+
         // request access to webcam
-        navigator.mediaDevices.getUserMedia({ video: { width: 426, height: 240 } }).then((stream) => video.srcObject = stream);
+        navigator.mediaDevices.getUserMedia({ video: { width: camerWidth, height: camerHeight } }).then((stream) => video.srcObject = stream);
 
         // returns a frame encoded in base64
         const getFrame = () => {
@@ -41,7 +51,30 @@
         }
 
         socket.on('response_message', (msg) => {
-            document.getElementById("responses").appendChild(document.createTextNode(msg))
+            // document.getElementById("responses").appendChild(document.createTextNode(msg))
+
+            arr = JSON.parse(msg);
+
+            arr.forEach(el => {
+
+                if (el['class'] !== 'person') {
+                    return
+                }
+
+                const bb = el['bounding_box'];
+                const xDist = bb['xmax'] - bb['xmin'];
+                const yDist = bb['ymax'] - bb['ymin'];
+
+                const xCenter = bb['xmin'] + xDist/2;
+                const yCenter = bb['ymin'] + yDist/2;
+
+                ctx.beginPath();
+                ctx.rect(xCenter-20, yCenter-20, 20, 20);
+                ctx.stroke();
+                
+            });
+
+
         });
 
         setInterval(() => {
