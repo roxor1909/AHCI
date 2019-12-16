@@ -68,8 +68,9 @@
                 const xCenter = bb['xmin'] + xDist/2;
                 const yCenter = bb['ymin'] + yDist/2;
 
+                ctx.clearRect(0, 0, camerWidth, camerHeight);
                 ctx.beginPath();
-                ctx.rect(xCenter-20, yCenter-20, 20, 20);
+                ctx.rect(bb['xmin'], bb['ymin'], xDist, yDist);
                 ctx.stroke();
                 
             });
