@@ -169,5 +169,5 @@ if __name__ == '__main__':
 
     _, input_height, input_width, _ = interpreter.get_input_details()[0]['shape']
 
-    print('Starting sutff')
-    socketio.run(app, debug=debug, port=port, use_reloader=use_reloader)
+    print('Starting server')
+    socketio.run(app, host='0.0.0.0', debug=debug, port=port, use_reloader=use_reloader)
