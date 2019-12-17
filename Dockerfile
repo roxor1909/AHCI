@@ -9,6 +9,8 @@ ENV AHCI_DEV=true \
 COPY app/requirements.txt ./
 RUN pip install -r requirements.txt
 
+COPY app/object_detection/pip_binaries/tflite_runtime-1.14.0-cp37-cp37m-linux_x86_64.whl ./
+RUN pip install tflite_runtime-1.14.0-cp37-cp37m-linux_x86_64.whl
 COPY app/ ./
 
 EXPOSE 8080
