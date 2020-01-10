@@ -6,6 +6,10 @@ ENV AHCI_DEV=true \
     AHCI_PORT=8080 \
     AHCI_USE_RELOADER=true
 
+RUN apt-get update && apt-get install -y \
+    cmake \
+ && rm -rf /var/lib/apt/lists/*
+
 COPY app/requirements.txt ./
 RUN pip install -r requirements.txt
 

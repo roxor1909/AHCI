@@ -2,23 +2,24 @@ import os
 from flask import Flask, render_template
 from flask_socketio import SocketIO
 
+import sys
 import base64
 import io
 import re
 import numpy as np
 import json
+import face_recognition
 from PIL import Image
 
-# import cv2
-# import matplotlib.pyplot as plt
-# import cvlib as cv
-# from cvlib.object_detection import draw_bbox
 
 from tflite_runtime.interpreter import Interpreter
+
+from image_processing import FaceRecognition
 
 # Some globals
 labels = None
 interpreter = None
+face_recognition = None
 
 input_height = 0
 input_width = 0
@@ -49,7 +50,6 @@ def on_disconnect():
 def handle_camera_frame_event(inJson, methods=['POST']):
 
     if 'framedata' in inJson:
-        print('framedata')
         val = inJson['framedata'].split(',')[1]
         imgData = base64.b64decode(val)
         img = Image.open(io.BytesIO(imgData))
@@ -60,8 +60,12 @@ def handle_camera_frame_event(inJson, methods=['POST']):
         results = detect_objects(interpreter, img, threshold=0.6)
         returnJson = json.dumps(results, separators=(',', ':'), sort_keys=True, indent=4)
 
-        socketio.emit('response_message', returnJson)
+        matched_person = face_recognition.match_person_in_image(np.array(img))
+        if matched_person != None:
+            print("detected " + matched_person, file=sys.stderr)
 
+        print(json.dumps({ "person": matched_person }), file=sys.stderr)
+        socketio.emit('response_message', returnJson)
 
 def try_get_env(name):
     try:
@@ -166,6 +170,7 @@ if __name__ == '__main__':
     interpreter = Interpreter(os.path.join(
         object_detection_static_path, 'detect.tflite'))
     interpreter.allocate_tensors()
+    face_recognition = FaceRecognition()
 
     _, input_height, input_width, _ = interpreter.get_input_details()[0]['shape']
 
