@@ -57,15 +57,16 @@ def handle_camera_frame_event(inJson, methods=['POST']):
         img = img.convert('RGB').resize(
             (input_width, input_height), Image.ANTIALIAS)
 
-        results = detect_objects(interpreter, img, threshold=0.6)
-        returnJson = json.dumps(results, separators=(',', ':'), sort_keys=True, indent=4)
-
+        bounding_boxes = detect_objects(interpreter, img, threshold=0.6)
         matched_person = face_recognition.match_person_in_image(np.array(img))
         if matched_person != None:
             print("detected " + matched_person, file=sys.stderr)
 
-        print(json.dumps({ "person": matched_person }), file=sys.stderr)
-        socketio.emit('response_message', returnJson)
+        json_response = json.dumps({
+            'matchedPerson': matched_person,
+            'boundingBoxes': bounding_boxes
+            })
+        socketio.emit('response_message', json_response)
         #socketio.emit('response_message', getPanelPositions())
 
 def try_get_env(name):

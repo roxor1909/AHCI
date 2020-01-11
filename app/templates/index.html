@@ -39,12 +39,18 @@
     <script>
 
         let fabricCanvas;
+        let greetingTextInstance;
+        let clockInstance;
+        let graphInstance;
+        let achievementsInstance;
+
         let lastXPositionClock = 0;
         let lastYPositionClock = 0;
         let lastXPositionGraph = 0;
         let lastYPositionGraph = 0;
         let lastXPositionAchievements = 0;
         let lastYPositionAchievements = 0;
+        let lastMatchedPerson;
 
 
         // get video dom element
@@ -72,9 +78,55 @@
             socket.emit('camera_frame', { framedata: data });
         }
 
-        socket.on('response_message', (msg) => {
-            /*const json = JSON.parse(msg);
+        function showUserGreeting(matchedPerson) {
+            if (matchedPerson === lastMatchedPerson) {
+                // return immediately when no changes since last frame
+                return;
+            }
 
+            let greeting;
+            
+            // hide greeting when no person was recognized
+            if (matchedPerson === null) {
+                greeting =  '';
+            } else if (matchedPerson === '') {
+                greeting = getGreetingForHourOfDay() + '.';
+            } else if (matchedPerson !== '') {
+                greeting = getGreetingForHourOfDay() + ', ' + matchedPerson.charAt(0).toUpperCase() + matchedPerson.slice(1) + '.';
+            }
+            if (greetingTextInstance) {
+                fabricCanvas.remove(greetingTextInstance);
+            }
+            greetingTextInstance = new fabric.Text(greeting, {
+                fontFamily: 'Arial',
+                left: 100,
+                top: 100,
+                fill: '#FFFFFF',
+                fontSize: 80
+            });
+            fabricCanvas.add(greetingTextInstance);
+
+            lastMatchedPerson = matchedPerson;
+        }
+
+        function getGreetingForHourOfDay() {
+            const h = new Date().getHours();
+            if (h < 4) {
+                return 'Good night';
+            } else if (h < 11) {
+                return 'Good morning';
+            } else if (h < 17) {
+                return 'Good afternoon';
+            } else if (h < 21) {
+                return 'Good evening';
+            }
+            return 'Good night';
+        }
+
+        socket.on('response_message', (msg) => {
+            const json = JSON.parse(msg);
+            showUserGreeting(json.matchedPerson);
+/*
             if (lastXPositionClock != json.clock.x || lastYPositionClock != json.clock.y) {
                 lastXPositionClock = json.clock.x;
                 lastYPositionClock = json.clock.y;
@@ -113,9 +165,7 @@
             }*/
             // document.getElementById("responses").appendChild(document.createTextNode(msg))
 
-            arr = JSON.parse(msg);
-
-            arr.forEach(el => {
+            json.boundingBoxes.forEach(el => {
 
                 if (el['class'] !== 'person') {
                     return
@@ -129,6 +179,7 @@
                 const yCenter = bb['ymin'] + yDist/2;
 
                 ctx.clearRect(0, 0, camerWidth, camerHeight);
+                ctx.strokeStyle = "#FFFFFF";
                 ctx.beginPath();
                 ctx.rect(bb['xmin'], bb['ymin'], xDist, yDist);
                 ctx.stroke();
@@ -145,26 +196,26 @@
         function initializeCanvas() {
             document.getElementById('canvas').width = window.innerWidth;
             document.getElementById('canvas').height = window.innerHeight;
-            fabricCanvas = new fabric.Canvas('canvas')
+            fabricCanvas = new fabric.Canvas('canvas');
 
-            const clockImage = document.getElementById('clock');
-            const clockInstance = new fabric.Image(clockImage, {
+/*            const clockImage = document.getElementById('clock');
+            clockInstance = new fabric.Image(clockImage, {
                 left: 0,
-                top: 0
+                top: 150
             });
             const graphImage = document.getElementById('graph');
-            const graphInstance = new fabric.Image(graphImage, {
+            graphInstance = new fabric.Image(graphImage, {
                 left: 500,
                 top: 0
             });
             const achievementsImage = document.getElementById('achievements');
-            const achievementsInstance = new fabric.Image(achievementsImage, {
+            achievementsInstance = new fabric.Image(achievementsImage, {
                 left: 1500,
                 top: 0
             });
             fabricCanvas.add(clockInstance);
             fabricCanvas.add(graphInstance);
-            fabricCanvas.add(achievementsInstance);
+            fabricCanvas.add(achievementsInstance);*/
         }
 
         (function () {
