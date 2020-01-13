@@ -6,8 +6,9 @@ class FaceRecognition:
 
     def __init__(self):
         self.known_face_encodings = []
-        self.known_face_names = [ "phil", "kylo", "leia", "rey", "luke"]
+        self.known_face_names = [ "phil", "kylo", "leia", "rey", "luke", "anakin"]
         for name in self.known_face_names:
+            print('#')
             img = face_recognition.load_image_file("users/" + name + ".png")
             enc = face_recognition.face_encodings(img)[0]
             self.known_face_encodings.append(enc)
