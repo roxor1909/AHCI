@@ -45,6 +45,8 @@ let lastMatchedPerson;
 let globalFontSize = 0;
 let globalIconWidth = 0;
 
+let lastUserInterfaceUpdate = new Date();
+
 function establishSocketConnection() {
 
     // trys to connect to the host that serves the page by default
@@ -94,42 +96,50 @@ function establishSocketConnection() {
             matchedPerson = matchedPerson.toLowerCase();
         }
         const matchedPersona = assignMatchedPersonToPersona(matchedPerson);
-        console.log('person: ' + matchedPerson + '; persona: ' + matchedPersona);
 
+        // debugging is automatically enabled for all faces excluding Leia, Luke, Anakin, Kylo and Rey.
         if (matchedPersona === PERSONAS.OTHER_HUMAN) {
             showDebugMessages(json, matchedPersona, videoCanvas, boundingBoxCanvas);
         } else {
             hideDebugMessages(videoCanvas, boundingBoxCanvas);
         }
 
-        if (matchedPerson !== lastMatchedPerson) {
-            if (matchedPersona == PERSONAS.OTHER_HUMAN || matchedPersona == PERSONAS.NONE) {
-                removeGamificationBadges();
-                removeUserGreeting();
-                removeLightsaber();
-                removeGraph();
-                removeTimer();
-            } else {
-                // adaptive font size depending on persona
-                globalFontSize = (matchedPersona == PERSONAS.SENIOR) ? 80 : 40;
-                globalIconWidth = (matchedPersona == PERSONAS.SENIOR) ? 40 : 20;
-
-                removeGamificationBadges();
-                removeUserGreeting();
-                removeLightsaber();
-                removeGraph();
-                removeTimer();
-
-                showUserGreeting(matchedPerson, matchedPersona);
-                showGamificationBadges(matchedPerson);
-                showLighsaber(matchedPerson);
-                showGraph(matchedPerson, matchedPersona);
-                showTimer();
+        // update UI only every 5 seconds
+        if (new Date() - lastUserInterfaceUpdate > 5000) {
+            if (matchedPerson !== lastMatchedPerson) {
+                updateUserInterface(matchedPerson, matchedPersona);
+                lastMatchedPerson = matchedPerson;
             }
-            lastMatchedPerson = matchedPerson;
+            lastUserInterfaceUpdate = new Date();
         }
     });
 
+}
+
+function updateUserInterface(matchedPerson, matchedPersona) {
+    if (matchedPersona == PERSONAS.OTHER_HUMAN || matchedPersona == PERSONAS.NONE) {
+        removeGamificationBadges();
+        removeUserGreeting();
+        removeLightsaber();
+        removeGraph();
+        removeTimer();
+    } else {
+        // adaptive font size depending on persona
+        globalFontSize = (matchedPersona == PERSONAS.SENIOR) ? 80 : 40;
+        globalIconWidth = (matchedPersona == PERSONAS.SENIOR) ? 40 : 20;
+
+        removeGamificationBadges();
+        removeUserGreeting();
+        removeLightsaber();
+        removeGraph();
+        removeTimer();
+
+        showUserGreeting(matchedPerson, matchedPersona);
+        showGamificationBadges(matchedPerson);
+        showLighsaber(matchedPerson);
+        showGraph(matchedPerson, matchedPersona);
+        showTimer();
+    }
 }
 
 function removeTimer() {
