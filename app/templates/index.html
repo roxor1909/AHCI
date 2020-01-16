@@ -33,9 +33,9 @@
     <!--<img src="https://media1.giphy.com/media/uxII4hAp5mreM/giphy.gif?cid=790b76117854fc8e32de7740c464318e31ef2a42f5e5055d&rid=giphy.gif"
         id="gif" style="position: absolute; top: 0; right: 0; width: 300px" alt="Darth Vader">-->
 
-    <img src="https://cdn3.iconfinder.com/data/icons/star-wars-color/181/stormtrooper-512.png" alt="Storm Trooper"
+    <img src="{{ url_for('static', filename='images/stormtrooper-512.png') }}" alt="Storm Trooper"
         width="60rem" id="stormtrooper" hidden>
-    <img src="https://cdn3.iconfinder.com/data/icons/star-wars-color/157/r2d2-512.png" alt="R2D2" width="60rem"
+    <img src="{{ url_for('static', filename='images/r2d2-512.png') }}" alt="R2D2" width="60rem"
         id="r2d2" hidden>
 
     <video autoplay></video>
