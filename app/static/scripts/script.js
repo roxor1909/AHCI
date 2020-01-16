@@ -1,5 +1,4 @@
 let socket;
-let lastDatePersonWasDetected = new Date();
 let fabricCanvas;
 let greetingTextInstance;
 let streakIconImageInstances = [];
@@ -16,6 +15,12 @@ let lastYPositionGraph = 0;
 let lastXPositionAchievements = 0;
 let lastYPositionAchievements = 0;
 let lastMatchedPerson;
+
+const personas = {
+    SENIOR: 'senior',
+    CHILD: 'child',
+    ADULT: 'adult',
+};
 
 function establishSocketConnection() {
     const camerWidth = 640;
@@ -59,28 +64,31 @@ function establishSocketConnection() {
 
     setInterval(() => {
         sendMessage(getFrame());
-    }, 1000);    
+    }, 1000);
 
     socket.on('response_message', (msg) => {
         const json = JSON.parse(msg);
-        const matchedPerson = json.matchedPerson;
+        
+        let matchedPerson = json.matchedPerson;
+        if (json.matchedPerson) {
+            matchedPerson = matchedPerson.toLowerCase();
+        }
+        const matchedPersona = assignMatchedPersonToPersona(matchedPerson);
 
-        showDebugMessages(json);
+        showDebugMessages(json, matchedPersona);
 
         if (matchedPerson !== lastMatchedPerson) {
             removeStreakIcons();
             removeUserGreeting();
             removeLightsaber();
 
-            showUserGreeting(matchedPerson);
+            showUserGreeting(matchedPerson, matchedPersona);
             showStreakIcons(matchedPerson);
             showLighsaber(matchedPerson);
-            lastDatePersonWasDetected = new Date();
         }
         lastMatchedPerson = matchedPerson;
 
         json.boundingBoxes.forEach(el => {
-
             if (el['class'] !== 'person') {
                 return
             }
@@ -97,11 +105,23 @@ function establishSocketConnection() {
             ctx.beginPath();
             ctx.rect(bb['xmin'], bb['ymin'], xDist, yDist);
             ctx.stroke();
-
         });
 
     });
 
+}
+
+function assignMatchedPersonToPersona(matchedPerson) {
+    if (!matchedPerson) {
+        return undefined;
+    }
+    if (matchedPerson === 'anakin') {
+        return personas.CHILD;
+    } else if (matchedPerson === 'rey' || matchedPerson === 'kylo') {
+        return personas.ADULT;
+    } else if (matchedPerson === 'leia' || matchedPerson === 'luke') {
+        return personas.SENIOR;
+    }
 }
 
 function initializeCanvas() {
@@ -209,7 +229,7 @@ function removeUserGreeting() {
     }
 }
 
-function showUserGreeting(matchedPerson) {
+function showUserGreeting(matchedPerson, matchedPersona) {
     let greeting;
 
     // hide greeting when no person was recognized
@@ -217,15 +237,20 @@ function showUserGreeting(matchedPerson) {
         greeting = '';
     } else if (matchedPerson === '') {
         greeting = getGreetingForHourOfDay() + '.';
-    } else if (matchedPerson !== '') {
+    } else {
         greeting = getGreetingForHourOfDay() + ',\n' + matchedPerson.charAt(0).toUpperCase() + matchedPerson.slice(1) + '.';
     }
+
+    // adaptive font size depending on persona
+    const fontSize = (matchedPersona == personas.SENIOR) ? 80 : 40;
+    console.log(fontSize);
+
     greetingTextInstance = new fabric.Text(greeting, {
         fontFamily: 'Starjhol',
         left: 10,
         top: 800,
         fill: '#FFFFFF',
-        fontSize: 80
+        fontSize: fontSize
     });
     fabricCanvas.add(greetingTextInstance);
 }
@@ -244,7 +269,8 @@ function getGreetingForHourOfDay() {
     return 'Good night';
 }
 
-function showDebugMessages(json) {
+function showDebugMessages(json, matchedPersona) {
+    json.matchedPersona = matchedPersona;
     document.querySelector('#debug-text p').innerHTML = JSON.stringify(json);
 }
 
