@@ -33,14 +33,18 @@
     <!--<img src="https://media1.giphy.com/media/uxII4hAp5mreM/giphy.gif?cid=790b76117854fc8e32de7740c464318e31ef2a42f5e5055d&rid=giphy.gif"
         id="gif" style="position: absolute; top: 0; right: 0; width: 300px" alt="Darth Vader">-->
 
-    <img src="{{ url_for('static', filename='images/stormtrooper-512.png') }}" alt="Storm Trooper"
-        width="60rem" id="stormtrooper" hidden>
-    <img src="{{ url_for('static', filename='images/r2d2-512.png') }}" alt="R2D2" width="60rem"
-        id="r2d2" hidden>
+    <img src="{{ url_for('static', filename='images/stormtrooper-512.png') }}" alt="Storm Trooper" width="60rem"
+        id="stormtrooper" hidden>
+    <img src="{{ url_for('static', filename='images/r2d2-512.png') }}" alt="R2D2" width="60rem" id="r2d2" hidden>
 
-    <video autoplay></video>
+    <!-- debuggin -->
+    <div id="debug-text">
+        <p></p>
+    </div>
+    <video autoplay id="video-canvas"></video>
+    <canvas id="recognition-canvas"></canvas>
+    <!-- debugging end -->
 
-    <canvas id="reCanvas"></canvas>
     <div id="responses"></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/3.5.0/fabric.min.js"></script>
@@ -66,9 +70,9 @@
 
 
         // get video dom element
-        const video = document.querySelector('video');
+        const video = document.getElementById('video-canvas');
 
-        const canv = document.getElementById('reCanvas');
+        const canv = document.getElementById('recognition-canvas');
         canv.width = camerWidth;
         canv.height = camerHeight;
         const ctx = canv.getContext('2d');
@@ -206,27 +210,28 @@
             return 'Good night';
         }
 
+        function showDebugMessages(json) {
+            document.querySelector('#debug-text p').innerHTML = JSON.stringify(json);
+        }
+
         socket.on('response_message', (msg) => {
             const json = JSON.parse(msg);
             const matchedPerson = json.matchedPerson;
 
-            // only change the UI, when the currently detected person is different from the last one
-            console.log(new Date() - lastDatePersonWasDetected);
-            if ((new Date() - lastDatePersonWasDetected) > 3000) {
+            showDebugMessages(json);
 
-                if (matchedPerson !== lastMatchedPerson) {
-                    removeStreakIcons();
-                    removeUserGreeting();
-                    removeLightsaber();
 
-                    showUserGreeting(matchedPerson);
-                    showStreakIcons(matchedPerson);
-                    showLighsaber(matchedPerson);
-                    lastDatePersonWasDetected = new Date();
-                }
-                lastMatchedPerson = matchedPerson;
+            if (matchedPerson !== lastMatchedPerson) {
+                removeStreakIcons();
+                removeUserGreeting();
+                removeLightsaber();
 
+                showUserGreeting(matchedPerson);
+                showStreakIcons(matchedPerson);
+                showLighsaber(matchedPerson);
+                lastDatePersonWasDetected = new Date();
             }
+            lastMatchedPerson = matchedPerson;
             /*
                         if (lastXPositionClock != json.clock.x || lastYPositionClock != json.clock.y) {
                             lastXPositionClock = json.clock.x;
