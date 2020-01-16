@@ -6,7 +6,7 @@ class FaceRecognition:
 
     def __init__(self):
         self.known_face_encodings = []
-        self.known_face_names = [ "phil", "kylo", "leia", "rey", "luke", "anakin"]
+        self.known_face_names = [ "kylo", "leia", "rey", "luke", "anakin"]
         for name in self.known_face_names:
             print('#')
             img = face_recognition.load_image_file("users/" + name + ".png")
@@ -38,6 +38,6 @@ class FaceRecognition:
             # best_match_index = np.argmin(face_distances)
             # if matches[best_match_index]:
             #    name = self.known_face_names[best_match_index]
-            return ""
+            return "unkown"
 
         return None
