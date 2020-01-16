@@ -16,10 +16,14 @@ from tflite_runtime.interpreter import Interpreter
 from layoutCalculation import *
 from image_processing import FaceRecognition
 
+import persistence
+
 # Some globals
 labels = None
 interpreter = None
 face_recognition = None
+
+DB_CONNECTION = None
 
 input_height = 0
 input_width = 0
@@ -67,7 +71,6 @@ def handle_camera_frame_event(inJson, methods=['POST']):
             'boundingBoxes': bounding_boxes
             })
         socketio.emit('response_message', json_response)
-        #socketio.emit('response_message', getPanelPositions())
 
 def try_get_env(name):
     try:
@@ -167,6 +170,8 @@ if __name__ == '__main__':
         dirname, 'object_detection/static')
 
     # Initialize globals
+    DB_CONNECTION = persistence.get_connection()
+
     labels = load_labels(os.path.join(
         object_detection_static_path, 'coco_labels.txt'))
     interpreter = Interpreter(os.path.join(
