@@ -4,14 +4,14 @@
     <script>
         const camerWidth = 640;
         const camerHeight = 480;
-        
+
 
         // trys to connect to the host that serves the page by default
         const socket = io();
 
         socket.on('connection', (socket) => {
             console.log('a user connected');
-            socket.emit('camera_frame', {camerWidth: camerWidth, camerHeight: camerHeight});
+            socket.emit('camera_frame', { camerWidth: camerWidth, camerHeight: camerHeight });
 
             socket.on('disconnect', () => {
                 console.log('user disconnected');
@@ -26,21 +26,32 @@
     <canvas id="canvas"></canvas>
 
     <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSgl1xvVrKLnSEwGqMDMxUIY8VexNQ9WLMOKwhgSevscEnVcwsT&s"
-        id="clock" hidden>
-    <img src="https://ak5.picdn.net/shutterstock/videos/16504675/thumb/4.jpg" id="graph" hidden>
-    <img src="https://icon-library.net/images/achievement-icon/achievement-icon-16.jpg" id="achievements" hidden>
-    <img src="https://media1.giphy.com/media/uxII4hAp5mreM/giphy.gif?cid=790b76117854fc8e32de7740c464318e31ef2a42f5e5055d&rid=giphy.gif" id="gif" style="position: absolute; top: 0; right: 0; width: 300px">
+        id="clock" alt="Clock" hidden>
+    <img src="https://ak5.picdn.net/shutterstock/videos/16504675/thumb/4.jpg" id="graph" alt="Graph" hidden>
+    <img src="https://icon-library.net/images/achievement-icon/achievement-icon-16.jpg" id="achievements"
+        alt="Achivements" hidden>
+    <!--<img src="https://media1.giphy.com/media/uxII4hAp5mreM/giphy.gif?cid=790b76117854fc8e32de7740c464318e31ef2a42f5e5055d&rid=giphy.gif"
+        id="gif" style="position: absolute; top: 0; right: 0; width: 300px" alt="Darth Vader">-->
+
+    <img src="https://cdn3.iconfinder.com/data/icons/star-wars-color/181/stormtrooper-512.png" alt="Storm Trooper"
+        width="60rem" id="stormtrooper" hidden>
+    <img src="https://cdn3.iconfinder.com/data/icons/star-wars-color/157/r2d2-512.png" alt="R2D2" width="60rem"
+        id="r2d2" hidden>
 
     <video autoplay></video>
 
-    <canvas id="reCanvas" ></canvas>
+    <canvas id="reCanvas"></canvas>
     <div id="responses"></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/3.5.0/fabric.min.js"></script>
     <script>
 
+        let lastDatePersonWasDetected = new Date();
         let fabricCanvas;
         let greetingTextInstance;
+        let streakIconImageInstances = [];
+        let streakIconText;
+        let lightsaberImageInstance;
         let clockInstance;
         let graphInstance;
         let achievementsInstance;
@@ -79,35 +90,106 @@
             socket.emit('camera_frame', { framedata: data });
         }
 
-        function showUserGreeting(matchedPerson) {
-            if (matchedPerson === lastMatchedPerson) {
-                // return immediately when no changes since last frame
-                return;
+        function removeLightsaber() {
+            if (lightsaberImageInstance) {
+                fabricCanvas.remove(lightsaberImageInstance);
             }
+        }
 
-            let greeting;
-            
-            // hide greeting when no person was recognized
-            if (matchedPerson === null) {
-                greeting =  '';
-            } else if (matchedPerson === '') {
-                greeting = getGreetingForHourOfDay() + '.';
-            } else if (matchedPerson !== '') {
-                greeting = getGreetingForHourOfDay() + ', ' + matchedPerson.charAt(0).toUpperCase() + matchedPerson.slice(1) + '.';
+        function showLighsaber(matchedPerson) {
+            if (matchedPerson) {
+                let url;
+                if (matchedPerson.toLowerCase() === 'kylo') {
+                    url = 'https://cdn3.iconfinder.com/data/icons/star-wars-color/424/lightsaber-darth-vader-512.png';
+                } else if (matchedPerson.toLowerCase() === 'rey') {
+                    url = 'https://cdn3.iconfinder.com/data/icons/star-wars-color/424/lightsaber-luke-anh-512.png';
+                }
+                fabric.Image.fromURL(url, (img) => {
+                    img.set({
+                        top: 0,
+                        left: window.innerWidth - 150,
+                    });
+                    fabricCanvas.add(img);
+                    lightsaberImageInstance = img;
+                });
             }
+        }
+
+        function removeStreakIcons() {
+            if (streakIconImageInstances.length > 0) {
+                streakIconImageInstances.forEach(img => {
+                    fabricCanvas.remove(img);
+                })
+            }
+            if (streakIconText) {
+                fabricCanvas.remove(streakIconText);
+            }
+        }
+
+        function showStreakIcons(matchedPerson) {
+            if (matchedPerson) {
+                if (matchedPerson.toLowerCase() === 'rey' || matchedPerson.toLowerCase() === 'kylo') {
+                    streakIconText = new fabric.Text('Tooth brush streak counter:', {
+                        fontFamily: 'Starjedi',
+                        left: 0,
+                        top: 0,
+                        fill: '#FFFFFF',
+                        fontSize: 15
+                    });
+                    fabricCanvas.add(streakIconText);
+                }
+                if (matchedPerson.toLowerCase() === 'kylo') {
+                    for (let i = 0; i < 3; i++) {
+                        const image = document.getElementById('stormtrooper');
+                        let imageInstance = new fabric.Image(image, {
+                            left: 0 + i * 50,
+                            top: 20,
+                        });
+                        imageInstance.scaleToWidth(45);
+                        fabricCanvas.add(imageInstance);
+                        streakIconImageInstances.push(imageInstance);
+                    }
+                } else if (matchedPerson.toLowerCase() === 'rey') {
+                    for (let i = 0; i < 5; i++) {
+                        const image = document.getElementById('r2d2');
+                        let imageInstance = new fabric.Image(image, {
+                            left: 0 + i * 50,
+                            top: 20,
+                        });
+                        imageInstance.scaleToWidth(45);
+                        fabricCanvas.add(imageInstance);
+                        streakIconImageInstances.push(imageInstance);
+                    }
+                }
+
+            }
+        }
+
+        function removeUserGreeting() {
             if (greetingTextInstance) {
                 fabricCanvas.remove(greetingTextInstance);
             }
+        }
+
+        function showUserGreeting(matchedPerson) {
+            let greeting;
+
+            // hide greeting when no person was recognized
+            if (matchedPerson === null) {
+                greeting = '';
+            } else if (matchedPerson === '') {
+                greeting = getGreetingForHourOfDay() + '.';
+            } else if (matchedPerson !== '') {
+                greeting = getGreetingForHourOfDay() + ',\n' + matchedPerson.charAt(0).toUpperCase() + matchedPerson.slice(1) + '.';
+            }
             greetingTextInstance = new fabric.Text(greeting, {
-                fontFamily: 'Arial',
-                left: 100,
-                top: 100,
+                fontFamily: 'Starjhol',
+                left: 10,
+                top: 800,
                 fill: '#FFFFFF',
                 fontSize: 80
             });
             fabricCanvas.add(greetingTextInstance);
-
-            lastMatchedPerson = matchedPerson;
         }
 
         function getGreetingForHourOfDay() {
@@ -126,44 +208,62 @@
 
         socket.on('response_message', (msg) => {
             const json = JSON.parse(msg);
-            showUserGreeting(json.matchedPerson);
-/*
-            if (lastXPositionClock != json.clock.x || lastYPositionClock != json.clock.y) {
-                lastXPositionClock = json.clock.x;
-                lastYPositionClock = json.clock.y;
-                fabricCanvas.item(0).animate('left', json.clock.x, {
-                    duration: 1000,
-                    onChange: fabricCanvas.renderAll.bind(fabricCanvas)
-                });
-                fabricCanvas.item(0).animate('top', json.clock.y, {
-                    duration: 1000,
-                    onChange: fabricCanvas.renderAll.bind(fabricCanvas)
-                });
+            const matchedPerson = json.matchedPerson;
+
+            // only change the UI, when the currently detected person is different from the last one
+            console.log(new Date() - lastDatePersonWasDetected);
+            if ((new Date() - lastDatePersonWasDetected) > 3000) {
+
+                if (matchedPerson !== lastMatchedPerson) {
+                    removeStreakIcons();
+                    removeUserGreeting();
+                    removeLightsaber();
+
+                    showUserGreeting(matchedPerson);
+                    showStreakIcons(matchedPerson);
+                    showLighsaber(matchedPerson);
+                    lastDatePersonWasDetected = new Date();
+                }
+                lastMatchedPerson = matchedPerson;
+
             }
-            if (lastXPositionGraph != json.graph.x || lastYPositionGraph != json.graph.y) {
-                lastXPositionGraph = json.graph.x;
-                lastYPositionGraph = json.graph.y;
-                fabricCanvas.item(1).animate('left', json.graph.x, {
-                    duration: 1000,
-                    onChange: fabricCanvas.renderAll.bind(fabricCanvas)
-                });
-                fabricCanvas.item(1).animate('top', json.graph.y, {
-                    duration: 1000,
-                    onChange: fabricCanvas.renderAll.bind(fabricCanvas)
-                });
-            }
-            if (lastXPositionAchievements != json.achievements.x || lastYPositionAchievements != json.achievements.y) {
-                lastXPositionAchievements = json.achievements.x;
-                lastYPositionAchievements = json.achievements.y;
-                fabricCanvas.item(2).animate('left', json.achievements.x, {
-                    duration: 1000,
-                    onChange: fabricCanvas.renderAll.bind(fabricCanvas)
-                });
-                fabricCanvas.item(2).animate('top', json.achievements.y, {
-                    duration: 1000,
-                    onChange: fabricCanvas.renderAll.bind(fabricCanvas)
-                });
-            }*/
+            /*
+                        if (lastXPositionClock != json.clock.x || lastYPositionClock != json.clock.y) {
+                            lastXPositionClock = json.clock.x;
+                            lastYPositionClock = json.clock.y;
+                            fabricCanvas.item(0).animate('left', json.clock.x, {
+                                duration: 1000,
+                                onChange: fabricCanvas.renderAll.bind(fabricCanvas)
+                            });
+                            fabricCanvas.item(0).animate('top', json.clock.y, {
+                                duration: 1000,
+                                onChange: fabricCanvas.renderAll.bind(fabricCanvas)
+                            });
+                        }
+                        if (lastXPositionGraph != json.graph.x || lastYPositionGraph != json.graph.y) {
+                            lastXPositionGraph = json.graph.x;
+                            lastYPositionGraph = json.graph.y;
+                            fabricCanvas.item(1).animate('left', json.graph.x, {
+                                duration: 1000,
+                                onChange: fabricCanvas.renderAll.bind(fabricCanvas)
+                            });
+                            fabricCanvas.item(1).animate('top', json.graph.y, {
+                                duration: 1000,
+                                onChange: fabricCanvas.renderAll.bind(fabricCanvas)
+                            });
+                        }
+                        if (lastXPositionAchievements != json.achievements.x || lastYPositionAchievements != json.achievements.y) {
+                            lastXPositionAchievements = json.achievements.x;
+                            lastYPositionAchievements = json.achievements.y;
+                            fabricCanvas.item(2).animate('left', json.achievements.x, {
+                                duration: 1000,
+                                onChange: fabricCanvas.renderAll.bind(fabricCanvas)
+                            });
+                            fabricCanvas.item(2).animate('top', json.achievements.y, {
+                                duration: 1000,
+                                onChange: fabricCanvas.renderAll.bind(fabricCanvas)
+                            });
+                        }*/
             // document.getElementById("responses").appendChild(document.createTextNode(msg))
 
             json.boundingBoxes.forEach(el => {
@@ -176,15 +276,15 @@
                 const xDist = bb['xmax'] - bb['xmin'];
                 const yDist = bb['ymax'] - bb['ymin'];
 
-                const xCenter = bb['xmin'] + xDist/2;
-                const yCenter = bb['ymin'] + yDist/2;
+                const xCenter = bb['xmin'] + xDist / 2;
+                const yCenter = bb['ymin'] + yDist / 2;
 
                 ctx.clearRect(0, 0, camerWidth, camerHeight);
                 ctx.strokeStyle = "#FFFFFF";
                 ctx.beginPath();
                 ctx.rect(bb['xmin'], bb['ymin'], xDist, yDist);
                 ctx.stroke();
-                
+
             });
 
 
@@ -199,24 +299,24 @@
             document.getElementById('canvas').height = window.innerHeight;
             fabricCanvas = new fabric.Canvas('canvas');
 
-/*            const clockImage = document.getElementById('clock');
-            clockInstance = new fabric.Image(clockImage, {
-                left: 0,
-                top: 150
-            });
-            const graphImage = document.getElementById('graph');
-            graphInstance = new fabric.Image(graphImage, {
-                left: 500,
-                top: 0
-            });
-            const achievementsImage = document.getElementById('achievements');
-            achievementsInstance = new fabric.Image(achievementsImage, {
-                left: 1500,
-                top: 0
-            });
-            fabricCanvas.add(clockInstance);
-            fabricCanvas.add(graphInstance);
-            fabricCanvas.add(achievementsInstance);*/
+            /*            const clockImage = document.getElementById('clock');
+                        clockInstance = new fabric.Image(clockImage, {
+                            left: 0,
+                            top: 150
+                        });
+                        const graphImage = document.getElementById('graph');
+                        graphInstance = new fabric.Image(graphImage, {
+                            left: 500,
+                            top: 0
+                        });
+                        const achievementsImage = document.getElementById('achievements');
+                        achievementsInstance = new fabric.Image(achievementsImage, {
+                            left: 1500,
+                            top: 0
+                        });
+                        fabricCanvas.add(clockInstance);
+                        fabricCanvas.add(graphInstance);
+                        fabricCanvas.add(achievementsInstance);*/
         }
 
         (function () {

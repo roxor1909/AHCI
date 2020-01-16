@@ -1,3 +1,20 @@
+@font-face {
+    font-family: Starjedi;
+    src: url('../fonts/Starjedi.ttf');
+}
+@font-face {
+    font-family: Starjhol;
+    src: url('../fonts/Starjhol.ttf');
+}
+@font-face {
+    font-family: Starjout;
+    src: url('../fonts/Starjout.ttf');
+}
+@font-face {
+    font-family: Stjedise;
+    src: url('../fonts/Stjedise.ttf');
+}
+
 body {
     background-color: black;
 }
