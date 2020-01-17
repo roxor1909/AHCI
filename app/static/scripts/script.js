@@ -239,25 +239,6 @@ function initializeCanvas() {
     document.getElementById('canvas').width = window.innerWidth;
     document.getElementById('canvas').height = window.innerHeight;
     fabricCanvas = new fabric.Canvas('canvas');
-
-    /*            const clockImage = document.getElementById('clock');
-                clockInstance = new fabric.Image(clockImage, {
-                    left: 0,
-                    top: 150
-                });
-                const graphImage = document.getElementById('graph');
-                graphInstance = new fabric.Image(graphImage, {
-                    left: 500,
-                    top: 0
-                });
-                const achievementsImage = document.getElementById('achievements');
-                achievementsInstance = new fabric.Image(achievementsImage, {
-                    left: 1500,
-                    top: 0
-                });
-                fabricCanvas.add(clockInstance);
-                fabricCanvas.add(graphInstance);
-                fabricCanvas.add(achievementsInstance);*/
 }
 
 function removeLightsaber() {
