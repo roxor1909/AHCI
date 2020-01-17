@@ -1,27 +1,12 @@
 <head>
-    <title>Streamer</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
-    <script>
-    </script>
+    <title>AHCI Smart Mirror</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
 <body>
-
+    
     <canvas id="canvas"></canvas>
-
-    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSgl1xvVrKLnSEwGqMDMxUIY8VexNQ9WLMOKwhgSevscEnVcwsT&s"
-        id="clock" alt="Clock" hidden>
-    <img src="https://ak5.picdn.net/shutterstock/videos/16504675/thumb/4.jpg" id="graph" alt="Graph" hidden>
-    <img src="https://icon-library.net/images/achievement-icon/achievement-icon-16.jpg" id="achievements"
-        alt="Achivements" hidden>
-    <!--<img src="https://media1.giphy.com/media/uxII4hAp5mreM/giphy.gif?cid=790b76117854fc8e32de7740c464318e31ef2a42f5e5055d&rid=giphy.gif"
-        id="gif" style="position: absolute; top: 0; right: 0; width: 300px" alt="Darth Vader">-->
-
-    <img src="{{ url_for('static', filename='images/stormtrooper-512.png') }}" alt="Storm Trooper" width="60rem"
-        id="stormtrooper" hidden>
-    <img src="{{ url_for('static', filename='images/r2d2-512.png') }}" alt="R2D2" width="60rem" id="r2d2" hidden>
-
+        
     <!-- debugging -->
     <div id="debug-text">
         <pre></pre>
@@ -29,8 +14,9 @@
     <video autoplay id="video-canvas"></video>
     <canvas id="recognition-canvas"></canvas>
     <!-- debugging end -->
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/3.5.0/fabric.min.js"></script>
+    
+    <script src="{{ url_for('static', filename='scripts/socket.io.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/fabric.min.js') }}"></script>
     <script src="{{ url_for('static', filename='scripts/script.js') }}"></script>
 
 </body>
