@@ -9,12 +9,15 @@ import re
 import numpy as np
 import json
 import face_recognition
+import datetime
 from PIL import Image
 
 from tflite_runtime.interpreter import Interpreter
 
 from layoutCalculation import *
 from image_processing import FaceRecognition
+
+import graph_plotting
 
 import persistence
 
@@ -24,6 +27,9 @@ interpreter = None
 face_recognition = None
 
 DB_CONNECTION = None
+
+IS_BRUSHING = False
+BRUSHING_START = datetime.datetime.now()
 
 input_height = 0
 input_width = 0
@@ -61,13 +67,33 @@ def handle_camera_frame_event(inJson, methods=['POST']):
         img = img.convert('RGB').resize(
             (input_width, input_height), Image.ANTIALIAS)
 
-        bounding_boxes = detect_objects(interpreter, img, threshold=0.6)
+        bounding_boxes = detect_objects(interpreter, img, threshold=0.4)
+
+        # Detect bushing event
+
+        global IS_BRUSHING
+
+        for obj in bounding_boxes:
+            if obj['class'] == 'toothbrush':
+                print('##### Brush detected #####')
+                _h = obj['bounding']['ymax'] - obj['bounding']['ymin']
+                _w = obj['bounding']['xmax'] - obj['bounding']['xmin']
+
+                if _h > _w:
+                    IS_BRUSHING = True
+                    BRUSHING_START = datetime.datetime.now()
+
+                break
+ 
+        ############
+
         matched_person = face_recognition.match_person_in_image(np.array(img))
         if matched_person != None:
             print("detected " + matched_person, file=sys.stderr)
 
         json_response = json.dumps({
             'matchedPerson': matched_person,
+            'isBrushing': IS_BRUSHING,
             'boundingBoxes': bounding_boxes
             })
         socketio.emit('response_message', json_response)
@@ -171,6 +197,7 @@ if __name__ == '__main__':
 
     # Initialize globals
     DB_CONNECTION = persistence.get_connection()
+    persistence.create_schema_if_not_exists(DB_CONNECTION)
 
     labels = load_labels(os.path.join(
         object_detection_static_path, 'coco_labels.txt'))
@@ -181,5 +208,10 @@ if __name__ == '__main__':
 
     _, input_height, input_width, _ = interpreter.get_input_details()[0]['shape']
 
+    graph_plotting.plot_graph_for_persona('luke')
+    graph_plotting.plot_graph_for_persona('leia')
+    graph_plotting.plot_graph_for_persona('kylo')
+    graph_plotting.plot_graph_for_persona('rey')
+    
     print('Starting server')
     socketio.run(app, host='0.0.0.0', debug=debug, port=port, use_reloader=use_reloader)

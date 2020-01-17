@@ -2,3 +2,5 @@ __pycache__
 
 # VS Code 
 .vscode/
+
+./app/mirror.db
