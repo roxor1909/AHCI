@@ -177,8 +177,7 @@ function showTimer() {
         timerIconImageInstance = img;
     });
 
-    // timer text
-    timerRefreshIntervalId = setInterval(() => {
+    const updateTimer = () => {
         if (timerTextInstance) {
             fabricCanvas.remove(timerTextInstance);
         }
@@ -197,7 +196,12 @@ function showTimer() {
         });
         fabricCanvas.add(timerTextInstance);
         currentTimerValueInSeconds++;
-    }, 1000);
+    };
+
+    updateTimer();
+
+    // timer text
+    timerRefreshIntervalId = setInterval(updateTimer, 1000);
 }
 
 function removeGraph() {
