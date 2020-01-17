@@ -7,6 +7,15 @@
       - [For bash](#for-bash)
       - [For powershell (Windows 🎉)](#for-powershell-windows-%f0%9f%8e%89)
 
+## Production
+
+### Docker
+
+```bash
+docker build -t ahci -f DockerfileRaspberryPi .
+docker run -p 8080:8080 ahci
+```
+
 ## Development
 
 ### Docker

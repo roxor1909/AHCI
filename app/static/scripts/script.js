@@ -8,6 +8,9 @@ const PERSONAS = {
 const KNOWN_PERSONS = ['leia', 'luke', 'anakin', 'rey', 'kylo'];
 const CAMERA_WIDTH = 640;
 const CAMERA_HEIGHT = 480;
+const PADDING_LEFT = 30;
+const PADDING_TOP = 30;
+const UI_UPDATE_DELAY_MS = 000;
 
 let socket;
 let fabricCanvas;
@@ -105,7 +108,7 @@ function establishSocketConnection() {
         }
 
         // update UI only every 5 seconds
-        if (new Date() - lastUserInterfaceUpdate > 5000) {
+        if (new Date() - lastUserInterfaceUpdate > UI_UPDATE_DELAY_MS) {
             if (matchedPerson !== lastMatchedPerson) {
                 updateUserInterface(matchedPerson, matchedPersona);
                 lastMatchedPerson = matchedPerson;
@@ -169,8 +172,8 @@ function showTimer() {
     let url = 'static/images/clock-solid.png';
     fabric.Image.fromURL(url, (img) => {
         img.set({
-            top: globalFontSize * 1.5,
-            left: 0,
+            top: PADDING_TOP + globalFontSize * 1.5,
+            left: PADDING_LEFT,
         });
         img.scaleToWidth(globalIconWidth);
         fabricCanvas.add(img);
@@ -189,8 +192,8 @@ function showTimer() {
         let minutes = (currentTimerValueInSeconds / 60).toString().split('.')[0];
         timerTextInstance = new fabric.Text(`${minutes}:${seconds}`, {
             fontFamily: '"Courier New", Courier, monospace',
-            top: globalFontSize * 1.5,
-            left: globalIconWidth + 10,
+            top: PADDING_TOP + globalFontSize * 1.5,
+            left: globalIconWidth + PADDING_LEFT + 10,
             fill: '#FFFFFF',
             fontSize: globalFontSize
         });
@@ -212,10 +215,10 @@ function removeGraph() {
 
 function showGraph(matchedPerson, matchedPersona) {
     if (matchedPersona == PERSONAS.ADULT) {
-        let url = 'static/images/countries_grouped_by_region_and_income_groups.png';
+        let url = `static/images/graph_${matchedPerson}.png`;
         fabric.Image.fromURL(url, (img) => {
             img.set({
-                top: 400,
+                top: window.innerHeight - 160,
                 left: 0
             });
             img.scaleToWidth(400);
@@ -252,17 +255,14 @@ function removeLightsaber() {
 }
 
 function showLighsaber(matchedPerson) {
-    if (matchedPerson) {
-        let url;
-        if (matchedPerson.toLowerCase() === 'kylo') {
-            url = 'https://cdn3.iconfinder.com/data/icons/star-wars-color/424/lightsaber-darth-vader-512.png';
-        } else if (matchedPerson.toLowerCase() === 'rey') {
-            url = 'https://cdn3.iconfinder.com/data/icons/star-wars-color/424/lightsaber-luke-anh-512.png';
-        }
-        fabric.Image.fromURL(url, (img) => {
+    if (matchedPerson && (matchedPerson === 'kylo' || matchedPerson === 'rey' || matchedPerson === 'anakin')) {
+        fabric.Image.fromURL(`static/images/lightsaber_${matchedPerson}.png`, (img) => {
             img.set({
-                top: 0,
-                left: window.innerWidth - 150,
+                top: window.innerHeight - 420,
+                left: window.innerWidth - 60,
+                angle: 45,
+                originX: 'left',
+                originY: 'top'
             });
             fabricCanvas.add(img);
             lightsaberImageInstance = img;
@@ -289,8 +289,8 @@ function showGamificationBadges(matchedPerson) {
         if (KNOWN_PERSONS.includes(matchedPerson)) {
             fabric.Image.fromURL('static/images/star-solid.png', (img) => {
                 img.set({
-                    top: globalFontSize * 2.7,
-                    left: 0,
+                    top: PADDING_TOP + globalFontSize * 2.7,
+                    left: PADDING_LEFT,
                 });
                 img.scaleToWidth(globalIconWidth);
                 fabricCanvas.add(img);
@@ -303,8 +303,8 @@ function showGamificationBadges(matchedPerson) {
         for (let i = 0; i < 3; i++) {
             const image = document.getElementById('stormtrooper');
             let imageInstance = new fabric.Image(image, {
-                top: globalFontSize * 3,
-                left: globalIconWidth + 10 + i * globalIconWidth * 1.5,
+                top: PADDING_TOP + globalFontSize * 3,
+                left: globalIconWidth + PADDING_LEFT + 10 + i * globalIconWidth * 1.5,
             });
             imageInstance.scaleToWidth(globalIconWidth);
             fabricCanvas.add(imageInstance);
@@ -325,8 +325,8 @@ function removeUserGreeting() {
 function showUserGreeting(matchedPerson, matchedPersona) {
     fabric.Image.fromURL('static/images/user-solid.png', (img) => {
         img.set({
-            top: 10,
-            left: 0,
+            top: PADDING_TOP + 10,
+            left: PADDING_LEFT,
         });
         img.scaleToWidth(globalIconWidth);
         fabricCanvas.add(img);
@@ -346,8 +346,8 @@ function showUserGreeting(matchedPerson, matchedPersona) {
 
     userTextInstance = new fabric.Text(greeting, {
         fontFamily: '"Courier New", Courier, monospace',
-        top: 10,
-        left: globalIconWidth + 10,
+        top: PADDING_TOP + 10,
+        left: globalIconWidth + PADDING_LEFT + 10,
         fill: '#FFFFFF',
         fontSize: globalFontSize
     });
