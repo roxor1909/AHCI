@@ -128,8 +128,8 @@ function updateUserInterface(matchedPerson, matchedPersona) {
         removeTimer();
     } else {
         // adaptive font size depending on persona
-        globalFontSize = (matchedPersona == PERSONAS.SENIOR) ? 80 : 40;
-        globalIconWidth = (matchedPersona == PERSONAS.SENIOR) ? 40 : 20;
+        globalFontSize = (matchedPersona == PERSONAS.SENIOR) ? 120 : 80;
+        globalIconWidth = (matchedPersona == PERSONAS.SENIOR) ? 60 : 40;
 
         removeGamificationBadges();
         removeUserGreeting();
