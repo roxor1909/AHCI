@@ -301,14 +301,19 @@ function showGamificationBadges(matchedPerson) {
         // TODO: call API to retrieve badges
 
         for (let i = 0; i < 3; i++) {
-            const image = document.getElementById('stormtrooper');
-            let imageInstance = new fabric.Image(image, {
+            fabric.Image.fromURL('static/images/yoda.png', (img) => {
+                img.set({
+                    top: PADDING_TOP + globalFontSize * 2.7,
+                    left: PADDING_LEFT + 60,
+                });
+                img.scaleToWidth(globalIconWidth * 3);
+                fabricCanvas.add(img);
+                streakIconImageInstances.push(img);
+            });
+/*            let imageInstance = new fabric.Image(image, {
                 top: PADDING_TOP + globalFontSize * 3,
                 left: globalIconWidth + PADDING_LEFT + 10 + i * globalIconWidth * 1.5,
-            });
-            imageInstance.scaleToWidth(globalIconWidth);
-            fabricCanvas.add(imageInstance);
-            streakIconImageInstances.push(imageInstance);
+            });*/
         }
     }
 }
