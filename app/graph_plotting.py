@@ -1,14 +1,16 @@
 import numpy as np
 import sys
 from matplotlib import pyplot as plt
+import persistence
+
+connection = persistence.get_connection()
 
 def plot_graph_for_persona(persona):
-    y = [180,150,160,100,160,55]
+    result = persistence.get_tb_data_for_user(connection, persona)
+    y = [res[1] for res in result]
     color = '#1daae1'
-
     if (persona == 'kylo'):
         color = '#e74c3c'
-
     figure = plt.figure(figsize=(20, 10))
     ax = figure.add_subplot(321)
     ax.grid(False)

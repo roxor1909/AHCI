@@ -198,6 +198,7 @@ if __name__ == '__main__':
     # Initialize globals
     DB_CONNECTION = persistence.get_connection()
     persistence.create_schema_if_not_exists(DB_CONNECTION)
+    #persistence.create_dummy_data()
 
     labels = load_labels(os.path.join(
         object_detection_static_path, 'coco_labels.txt'))
