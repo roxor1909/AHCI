@@ -8,7 +8,7 @@ class FaceRecognition:
         self.known_face_encodings = []
         self.known_face_names = [ "kylo", "leia", "rey", "luke", "anakin"]
         for name in self.known_face_names:
-            print('#')
+            print(f"loading face for {name}", file=sys.stderr)
             img = face_recognition.load_image_file("users/" + name + ".png")
             enc = face_recognition.face_encodings(img)[0]
             self.known_face_encodings.append(enc)

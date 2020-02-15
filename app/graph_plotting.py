@@ -32,9 +32,9 @@ def plot_graph_for_persona(persona):
     ax.spines['left'].set_color('black')
     ax.spines['bottom'].set_color('white')
     for i, v in enumerate(y):
-        ax.text(i - 0.3, 50, format_brush_duration(v), fontsize=20, color='white', fontweight='bold')
+        print(f"plotting graph for {persona}: index {i} - value {v}", file=sys.stderr)
+        ax.text(i - 0.15, 50, format_brush_duration(v), fontsize=20, color='white', fontweight='bold')
     plt.yticks(color='black')
     plt.xticks(color='black')
     plt.plot()
-    print(f"plotting graph for {persona}", file=sys.stderr)
     figure.savefig(f"static/images/graph_{persona}.png", bbox_inches='tight', dpi=300, transparent=True)
