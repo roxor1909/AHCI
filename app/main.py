@@ -43,8 +43,7 @@ socketio = SocketIO(app)
 
 @app.route('/')
 def root_route():
-    return render_template("index.html")
-
+    return render_template('mirror.html')
 
 @socketio.on('connect')
 def on_connect():

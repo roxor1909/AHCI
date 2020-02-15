@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Smart Mirror</title>
+</head>
+
+<body>
+    <svg id="svg"></svg>
+
+
+    <style>
+        @font-face {
+            font-family: Starjedi;
+            src: url('./static/fonts/Starjedi.ttf');
+        }
+
+        @font-face {
+            font-family: Glipervelz;
+            src: url('./static/fonts/Glipervelz.ttf') format('truetype');
+        }
+
+        @font-face {
+            font-family: Digital7;
+            src: url('./static/fonts/digital-7.ttf') format('truetype');
+        }
+
+        @font-face {
+            font-family: LLPIXEL3;
+            src: url('./static/fonts/LLPIXEL3.ttf') format('truetype');
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: black;
+        }
+
+        #svg {
+            width: 99vw;
+            height: 99vh;
+        }
+    </style>
+
+    <script src="{{ url_for('static', filename='scripts/snap.svg-min.js') }}"></script>
+    <script>
+        /**
+         * Global parameters
+         **/
+        const SCREEN_WIDTH = window.innerWidth;
+        const SCREEN_HEIGHT = window.innerHeight;
+        const ANIMATION_DUR_IN_MILLI = 500;
+        const EASING = mina.easeinout;
+        const POSITIONS = Object.freeze({
+            RIGHT: Symbol('right'),
+            LEFT: Symbol('right'),
+            BOTTOM: Symbol('bottom'),
+            TOP: Symbol('top'),
+        });
+
+        class SidePanelWithGif {
+
+            constructor(position, username = 'Kylo Ren') {
+                this.position = position;
+                this.width = 390;
+
+                let horizontalOffset = 0;
+                if (position === POSITIONS.RIGHT) {
+                    horizontalOffset = SCREEN_WIDTH - this.width;
+                }
+
+                this.gif = paper.image('static/images/deathStar.gif', 35 + horizontalOffset, 80, 300, 350);
+                this.panel = paper.image('static/images/sidePanel.svg', 0 + horizontalOffset, 0, 430, 430);
+                this.text = paper.text(180 + horizontalOffset, 80, username)
+                this.text.attr({ fill: 'black', 'font-size': 50, 'font-family': 'Starjedi', 'text-anchor': 'middle' });
+            }
+
+            moveTo(position) {
+                if (this.position === position) {
+                    return;
+                }
+
+                let distance = 0;
+                if (position === POSITIONS.LEFT) {
+                    distance = -SCREEN_WIDTH + this.width;
+                } else if (position === POSITIONS.RIGHT) {
+                    distance = SCREEN_WIDTH - this.width;
+                }
+
+                this.gif.animate({
+                    transform: `t${distance},0`,
+                }, ANIMATION_DUR_IN_MILLI, EASING);
+                this.panel.animate({
+                    transform: `t${distance},0`,
+                }, ANIMATION_DUR_IN_MILLI, EASING);
+                this.text.animate({
+                    transform: `t${distance},0`,
+                }, ANIMATION_DUR_IN_MILLI, EASING);
+            }
+
+            setUsername(username) {
+                this.text.attr({ text: username });
+            }
+
+        }
+
+        class CenterPanel {
+
+            constructor(position) {
+                this.position = position;
+                this.height = 160;
+                this.width = 400;
+
+                let verticalOffset = 0;
+                if (position === POSITIONS.BOTTOM) {
+                    verticalOffset = SCREEN_HEIGHT - this.height;
+                }
+
+                this.panel = paper.image('static/images/centerPanel.svg', SCREEN_WIDTH / 2 - this.width, SCREEN_HEIGHT - this.height, 800, 150);
+                this.timer = paper.text(SCREEN_WIDTH / 2 - this.width + 558, SCREEN_HEIGHT - this.height + 80, '0:00');
+                this.timer.attr({ fill: 'white', 'text-anchor': 'right', 'font-size': 60, 'font-family': 'LLPIXEL3' });
+            }
+
+            moveTo(position) {
+                if (this.position === position) {
+                    return;
+                }
+
+                let distance = 0;
+                if (position === POSITIONS.TOP) {
+                    distance = -SCREEN_HEIGHT + this.height;
+                } else if (position === POSITIONS.BOTTOM) {
+                    distance = SCREEN_HEIGHT - this.height;
+                }
+
+                this.panel.animate({
+                    transform: `t0,${distance}`,
+                }, ANIMATION_DUR_IN_MILLI, EASING);
+                this.timer.animate({
+                    transform: `t0,${distance}`,
+                }, ANIMATION_DUR_IN_MILLI, EASING);
+            }
+
+            startTimer() {
+                let currentTimerValueInSeconds = 0;
+                const timer = () => {
+                    let seconds = (currentTimerValueInSeconds % 60).toString().split('.')[0];
+                    if (seconds < 10) {
+                        seconds = '0' + seconds;
+                    }
+                    let minutes = (currentTimerValueInSeconds / 60).toString().split('.')[0];
+                    this.timer.attr({ text: `${minutes}:${seconds}` });
+                    currentTimerValueInSeconds++;
+                }
+                timer();
+                this.timerUpdate = setInterval(timer, 1000);
+            }
+
+            stopTimer() {
+                clearInterval(this.timerUpdate);
+            }
+
+
+
+        }
+
+
+        const paper = Snap('#svg');
+
+        const sidePanel = new SidePanelWithGif(POSITIONS.RIGHT);
+        const centerPanel = new CenterPanel();
+        centerPanel.startTimer();
+
+        setTimeout(() => {
+            //sidePanel.moveTo(POSITIONS.LEFT);
+        }, 2000);
+        setTimeout(() => {
+            //centerPanel.moveTo(POSITIONS.TOP);
+            //centerPanel.stopTimer();
+            //sidePanel.setUsername('Anakin');
+        }, 3000);
+
+    </script>
+</body>
