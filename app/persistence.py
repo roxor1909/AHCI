@@ -8,6 +8,18 @@ def get_connection():
     connection = sqlite3.connect('mirror.db')
     return connection
 
+def drop_all_data(db_connection):
+    c = db_connection.cursor()
+
+    query1 = """DROP TABLE IF EXISTS tb_data;"""
+    query2 = """DROP TABLE IF EXISTS tb_achievements;"""
+
+    c.execute(query1)
+    c.execute(query2)
+
+    db_connection.commit()
+    c.close()
+
 def create_schema_if_not_exists(db_connection):
     c = db_connection.cursor()
 
@@ -71,14 +83,16 @@ def insert_achievement_for_user(db_connection, user_name, timestamp, achievement
     db_connection.commit()
     c.close()
 
-def create_dummy_data():
+def create_dummy_data(db_connection):
     now = datetime.now()
     yesterday = now - timedelta(days=1)
+    two_days_ago = yesterday - timedelta(days=1)
     normal_toothbrush = 3*60
-    conn = get_connection()
     persona = ['kylo', 'leia', 'luke', 'rey']
     for person in persona:
+        two_days_ago_brush = normal_toothbrush + (random.randint(0,30) - 15)
         yesterday_brush = normal_toothbrush + (random.randint(0,30) - 15)
         todays_brush = normal_toothbrush + (random.randint(0,30) - 15)
-        insert_tb_data_for_user(conn, person, yesterday, yesterday_brush)
-        insert_tb_data_for_user(conn, person, now, todays_brush)
+        insert_tb_data_for_user(db_connection, person, two_days_ago, two_days_ago_brush)
+        insert_tb_data_for_user(db_connection, person, yesterday, yesterday_brush)
+        insert_tb_data_for_user(db_connection, person, now, todays_brush)
