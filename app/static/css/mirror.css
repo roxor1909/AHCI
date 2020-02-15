@@ -1,0 +1,38 @@
+@font-face {
+    font-family: Starjedi;
+    src: url('../fonts/Starjedi.ttf');
+}
+
+@font-face {
+    font-family: Glipervelz;
+    src: url('../fonts/Glipervelz.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: Digital7;
+    src: url('../fonts/digital-7.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: LLPIXEL3;
+    src: url('../fonts/LLPIXEL3.ttf') format('truetype');
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: black;
+}
+
+#svg {
+    width: 99vw;
+    height: 99vh;
+}
+
+#video {
+    position: absolute;
+    top: 10rem;
+    right: 4.4rem;
+    width: 15rem;
+    z-index: -1;
+}
