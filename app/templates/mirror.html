@@ -6,6 +6,7 @@
 </head>
 
 <body>
+    <video autoplay id="video"></video>
     <svg id="svg"></svg>
 
 
@@ -40,6 +41,14 @@
             width: 99vw;
             height: 99vh;
         }
+
+        #video {
+            position: absolute;
+            top: 10rem;
+            right: 4.4rem;
+            width: 15rem;
+            z-index: -1;
+        }
     </style>
 
     <script src="{{ url_for('static', filename='scripts/snap.svg-min.js') }}"></script>
@@ -60,19 +69,26 @@
 
         class SidePanelWithGif {
 
-            constructor(position, username = 'Kylo Ren') {
+            constructor(position, username = 'Kylo Ren', showDebug) {
                 this.position = position;
-                this.width = 390;
+                this.width = 350;
 
                 let horizontalOffset = 0;
                 if (position === POSITIONS.RIGHT) {
                     horizontalOffset = SCREEN_WIDTH - this.width;
                 }
 
-                this.gif = paper.image('static/images/deathStar.gif', 35 + horizontalOffset, 80, 300, 350);
-                this.panel = paper.image('static/images/sidePanel.svg', 0 + horizontalOffset, 0, 430, 430);
-                this.text = paper.text(180 + horizontalOffset, 80, username)
+                this.video = document.getElementById('video');
+                this.gif = paper.image('static/images/deathStarWhite.gif', 60 + horizontalOffset, 160, 200, 200);
+                this.panel = paper.image('static/images/sidePanel.svg', 0 + horizontalOffset, 10, 320, SCREEN_HEIGHT - 20);
+                this.text = paper.text(160 + horizontalOffset, 80, username)
                 this.text.attr({ fill: 'black', 'font-size': 50, 'font-family': 'Starjedi', 'text-anchor': 'middle' });
+
+                if (showDebug === true) {
+                    this.showDebug();
+                } else {
+                    this.hideDebug();
+                }
             }
 
             moveTo(position) {
@@ -102,6 +118,20 @@
                 this.text.attr({ text: username });
             }
 
+            showDebug() {
+                this.gif.attr({
+                    visibility: 'hidden'
+                });
+                this.video.style.display = 'block';
+            }
+
+            hideDebug() {
+                this.gif.attr({
+                    visibility: ''
+                });
+                this.video.style.display = 'none';
+            }
+
         }
 
         class CenterPanel {
@@ -116,9 +146,13 @@
                     verticalOffset = SCREEN_HEIGHT - this.height;
                 }
 
+                this.gif = paper.image('static/images/wave.gif', SCREEN_WIDTH / 2 - this.width + 100, SCREEN_HEIGHT - this.height + 12, 600, 100);
                 this.panel = paper.image('static/images/centerPanel.svg', SCREEN_WIDTH / 2 - this.width, SCREEN_HEIGHT - this.height, 800, 150);
                 this.timer = paper.text(SCREEN_WIDTH / 2 - this.width + 558, SCREEN_HEIGHT - this.height + 80, '0:00');
                 this.timer.attr({ fill: 'white', 'text-anchor': 'right', 'font-size': 60, 'font-family': 'LLPIXEL3' });
+                this.gif.attr({
+                    visibility: '',
+                });
             }
 
             moveTo(position) {
@@ -142,6 +176,12 @@
             }
 
             startTimer() {
+                this.gif.attr({
+                    visibility: '',
+                });
+                this.timer.attr({
+                       visibility: '', 
+                });
                 let currentTimerValueInSeconds = 0;
                 const timer = () => {
                     let seconds = (currentTimerValueInSeconds % 60).toString().split('.')[0];
@@ -157,13 +197,21 @@
             }
 
             stopTimer() {
+                this.gif.attr({
+                    visibility: 'hidden',
+                });
                 clearInterval(this.timerUpdate);
+                setTimeout(() => {
+                    this.timer.attr({
+                       visibility: 'hidden', 
+                    });
+                }, 5000);
             }
-
-
 
         }
 
+        const video = document.getElementById('video');
+        navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } }).then((stream) => video.srcObject = stream);
 
         const paper = Snap('#svg');
 
@@ -176,9 +224,10 @@
         }, 2000);
         setTimeout(() => {
             //centerPanel.moveTo(POSITIONS.TOP);
-            //centerPanel.stopTimer();
+            centerPanel.stopTimer();
             //sidePanel.setUsername('Anakin');
-        }, 3000);
+            sidePanel.showDebug();
+        }, 5000);
 
     </script>
 </body>
