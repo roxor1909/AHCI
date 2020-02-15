@@ -79,6 +79,7 @@
                 }
 
                 this.video = document.getElementById('video');
+                navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } }).then((stream) => this.video.srcObject = stream);
                 this.gif = paper.image('static/images/deathStarWhite.gif', 60 + horizontalOffset, 160, 200, 200);
                 this.panel = paper.image('static/images/sidePanel.svg', 0 + horizontalOffset, 10, 320, SCREEN_HEIGHT - 20);
                 this.text = paper.text(160 + horizontalOffset, 80, username)
@@ -95,12 +96,16 @@
                 if (this.position === position) {
                     return;
                 }
+                this.position = position;
 
                 let distance = 0;
                 if (position === POSITIONS.LEFT) {
+                    this.video.style.left = '2.5rem';
+                    this.video.style.right = null;
                     distance = -SCREEN_WIDTH + this.width;
                 } else if (position === POSITIONS.RIGHT) {
-                    distance = SCREEN_WIDTH - this.width;
+                    this.video.style.left = null;
+                    this.video.style.right = '4.4rem';
                 }
 
                 this.gif.animate({
@@ -163,8 +168,6 @@
                 let distance = 0;
                 if (position === POSITIONS.TOP) {
                     distance = -SCREEN_HEIGHT + this.height;
-                } else if (position === POSITIONS.BOTTOM) {
-                    distance = SCREEN_HEIGHT - this.height;
                 }
 
                 this.panel.animate({
@@ -180,7 +183,7 @@
                     visibility: '',
                 });
                 this.timer.attr({
-                       visibility: '', 
+                    visibility: '',
                 });
                 let currentTimerValueInSeconds = 0;
                 const timer = () => {
@@ -201,17 +204,9 @@
                     visibility: 'hidden',
                 });
                 clearInterval(this.timerUpdate);
-                setTimeout(() => {
-                    this.timer.attr({
-                       visibility: 'hidden', 
-                    });
-                }, 5000);
             }
 
         }
-
-        const video = document.getElementById('video');
-        navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } }).then((stream) => video.srcObject = stream);
 
         const paper = Snap('#svg');
 
@@ -220,14 +215,19 @@
         centerPanel.startTimer();
 
         setTimeout(() => {
-            //sidePanel.moveTo(POSITIONS.LEFT);
+            sidePanel.moveTo(POSITIONS.LEFT);
         }, 2000);
         setTimeout(() => {
-            //centerPanel.moveTo(POSITIONS.TOP);
+            centerPanel.moveTo(POSITIONS.TOP);
             centerPanel.stopTimer();
-            //sidePanel.setUsername('Anakin');
+            sidePanel.setUsername('Anakin');
             sidePanel.showDebug();
         }, 5000);
+        setTimeout(() => {
+            sidePanel.moveTo(POSITIONS.RIGHT);
+            centerPanel.moveTo(POSITIONS.BOTTOM);
+            centerPanel.startTimer();
+        }, 7000);
 
     </script>
 </body>
