@@ -66,10 +66,17 @@
             BOTTOM: Symbol('bottom'),
             TOP: Symbol('top'),
         });
+        const PERSONA = Object.freeze({
+            ANAKIN: Symbol('Anakin'),
+            KYLO: Symbol('Kylo'),
+            LEIA: Symbol('Leia'),
+            LUKE: Symbol('Luke'),
+            REY: Symbol('Rey'),
+        });
 
         class SidePanelWithGif {
 
-            constructor(position, username = 'Kylo Ren', showDebug) {
+            constructor(position, username = '', showDebug) {
                 this.position = position;
                 this.width = 350;
 
@@ -90,6 +97,21 @@
                 } else {
                     this.hideDebug();
                 }
+            }
+
+            adaptTo(persona) {
+                if (persona === PERSONA.KYLO) {
+                    this.gif.attr({ 'xlink:href': 'static/images/deathStarRed.gif' });
+                    this.panel.attr({ 'xlink:href': 'static/images/sidePanelRed.svg' });
+                } else if (persona === PERSONA.REY || persona === PERSONA.ANAKIN || persona === PERSONA.LEIA || persona === PERSONA.LUKE) {
+                    this.gif.attr({ 'xlink:href': 'static/images/deathStarGreen.gif' });
+                    this.panel.attr({ 'xlink:href': 'static/images/sidePanelGreen.svg' });
+                } else {
+                    this.gif.attr({ 'xlink:href': 'static/images/deathStarWhite.gif' });
+                    this.panel.attr({ 'xlink:href': 'static/images/sidePanel.svg' });
+                }
+
+                this.text.attr({ text: persona.description.toString().toLowerCase() });
             }
 
             moveTo(position) {
@@ -117,10 +139,6 @@
                 this.text.animate({
                     transform: `t${distance},0`,
                 }, ANIMATION_DUR_IN_MILLI, EASING);
-            }
-
-            setUsername(username) {
-                this.text.attr({ text: username });
             }
 
             showDebug() {
@@ -156,8 +174,21 @@
                 this.timer = paper.text(SCREEN_WIDTH / 2 - this.width + 558, SCREEN_HEIGHT - this.height + 80, '0:00');
                 this.timer.attr({ fill: 'white', 'text-anchor': 'right', 'font-size': 60, 'font-family': 'LLPIXEL3' });
                 this.gif.attr({
-                    visibility: '',
+                    visibility: 'hidden',
                 });
+            }
+
+            adaptTo(persona) {
+                if (persona === PERSONA.KYLO) {
+                    this.gif.attr({ 'xlink:href': 'static/images/waveRed.gif' });
+                    this.panel.attr({ 'xlink:href': 'static/images/centerPanelRed.svg' });
+                } else if (persona === PERSONA.REY || persona === PERSONA.ANAKIN || persona === PERSONA.LEIA || persona === PERSONA.LUKE) {
+                    this.gif.attr({ 'xlink:href': 'static/images/waveGreen.gif' });
+                    this.panel.attr({ 'xlink:href': 'static/images/centerPanelGreen.svg' });
+                } else {
+                    this.gif.attr({ 'xlink:href': 'static/images/wave.gif' });
+                    this.panel.attr({ 'xlink:href': 'static/images/centerPanel.svg' });
+                }
             }
 
             moveTo(position) {
@@ -174,6 +205,9 @@
                     transform: `t0,${distance}`,
                 }, ANIMATION_DUR_IN_MILLI, EASING);
                 this.timer.animate({
+                    transform: `t0,${distance}`,
+                }, ANIMATION_DUR_IN_MILLI, EASING);
+                this.gif.animate({
                     transform: `t0,${distance}`,
                 }, ANIMATION_DUR_IN_MILLI, EASING);
             }
@@ -212,22 +246,29 @@
 
         const sidePanel = new SidePanelWithGif(POSITIONS.RIGHT);
         const centerPanel = new CenterPanel();
-        centerPanel.startTimer();
+
+        sidePanel.showDebug();
 
         setTimeout(() => {
+            sidePanel.hideDebug();
             sidePanel.moveTo(POSITIONS.LEFT);
+            sidePanel.adaptTo(PERSONA.ANAKIN);
+            centerPanel.adaptTo(PERSONA.ANAKIN);
+            centerPanel.startTimer();
         }, 2000);
         setTimeout(() => {
             centerPanel.moveTo(POSITIONS.TOP);
-            centerPanel.stopTimer();
-            sidePanel.setUsername('Anakin');
-            sidePanel.showDebug();
         }, 5000);
         setTimeout(() => {
             sidePanel.moveTo(POSITIONS.RIGHT);
+            sidePanel.adaptTo(PERSONA.KYLO);
+
             centerPanel.moveTo(POSITIONS.BOTTOM);
-            centerPanel.startTimer();
-        }, 7000);
+            centerPanel.adaptTo(PERSONA.KYLO);
+        }, 8000);
+        setTimeout(() => {
+            centerPanel.stopTimer();
+        }, 15000);
 
     </script>
 </body>
