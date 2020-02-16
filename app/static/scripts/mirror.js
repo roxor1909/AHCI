@@ -13,7 +13,7 @@ const POSITIONS = Object.freeze({
     BOTTOM: Symbol('bottom'),
     TOP: Symbol('top'),
 });
-const PERSONA = Object.freeze({
+const KNOWN_PERSONS = Object.freeze({
     ANAKIN: 'anakin',
     KYLO: 'kylo',
     LEIA: 'leia',
@@ -49,11 +49,11 @@ class SidePanel {
         this.group.attr({ visibility: '' });
     }
 
-    adaptTo(persona) {
-        if (persona === PERSONA.KYLO) {
+    adaptTo(person) {
+        if (person === KNOWN_PERSONS.KYLO) {
             this.gif.attr({ 'xlink:href': 'static/images/deathStarRed.gif' });
             this.panel.attr({ 'xlink:href': 'static/images/sidePanelRed.svg' });
-        } else if (persona === PERSONA.REY || persona === PERSONA.ANAKIN || persona === PERSONA.LEIA || persona === PERSONA.LUKE) {
+        } else if (person === KNOWN_PERSONS.REY || person === KNOWN_PERSONS.ANAKIN || person === KNOWN_PERSONS.LEIA || person === KNOWN_PERSONS.LUKE) {
             this.gif.attr({ 'xlink:href': 'static/images/deathStarGreen.gif' });
             this.panel.attr({ 'xlink:href': 'static/images/sidePanelGreen.svg' });
         } else {
@@ -61,7 +61,7 @@ class SidePanel {
             this.panel.attr({ 'xlink:href': 'static/images/sidePanel.svg' });
         }
 
-        this.text.attr({ text: persona.toString().toLowerCase() });
+        this.text.attr({ text: person.toString().toLowerCase() });
     }
 
     moveTo(position) {
@@ -108,11 +108,11 @@ class CenterPanel {
         this.group.attr({ visibility: '' });
     }
 
-    adaptTo(persona) {
-        if (persona === PERSONA.KYLO) {
+    adaptTo(person) {
+        if (person === KNOWN_PERSONS.KYLO) {
             this.gif.attr({ 'xlink:href': 'static/images/waveRed.gif' });
             this.panel.attr({ 'xlink:href': 'static/images/centerPanelRed.svg' });
-        } else if (persona === PERSONA.REY || persona === PERSONA.ANAKIN || persona === PERSONA.LEIA || persona === PERSONA.LUKE) {
+        } else if (person === KNOWN_PERSONS.REY || person === KNOWN_PERSONS.ANAKIN || person === KNOWN_PERSONS.LEIA || person === KNOWN_PERSONS.LUKE) {
             this.gif.attr({ 'xlink:href': 'static/images/waveGreen.gif' });
             this.panel.attr({ 'xlink:href': 'static/images/centerPanelGreen.svg' });
         } else {
@@ -182,7 +182,7 @@ class DebugPanel {
         this.boundingBoxCanvas.height = CAMERA_HEIGHT;
         this.debugText = document.querySelector('#debug-text pre')
 
-        this.debugPanel = paper.image('static/images/debugPanel.svg', SCREEN_WIDTH - 400, 290, 400, 800);
+        this.debugPanel = paper.image('static/images/debugPanel.svg', SCREEN_WIDTH - 400, 310, 400, 800);
         this.webcam = paper.image('static/images/webcamPanel.svg', SCREEN_WIDTH - 1000, 10, 1000, 300);
         this.gif = paper.image('static/images/fingerprintYellow.gif', SCREEN_WIDTH - 870, 80, 230, 150);
 
@@ -239,38 +239,12 @@ class DebugPanel {
 class PanelManager {
 
     constructor() {
-        this.debug = new DebugPanel();
+        this.debugPanel = new DebugPanel();
+        this.debugPanel.hide();
         this.sidePanel = new SidePanel(POSITIONS.RIGHT);
-        this.centerPanel = new CenterPanel();
-
         this.sidePanel.hide();
-        this.sidePanel.adaptTo(PERSONA.KYLO);
-        this.centerPanel.adaptTo(PERSONA.KYLO);
+        this.centerPanel = new CenterPanel();
         this.centerPanel.hide();
-
-        setTimeout(() => {
-            this.debug.hide();
-            this.sidePanel.show();
-            this.centerPanel.show();
-            this.sidePanel.moveTo(POSITIONS.LEFT);
-            this.sidePanel.adaptTo(PERSONA.ANAKIN);
-            this.centerPanel.adaptTo(PERSONA.ANAKIN);
-            this.centerPanel.startTimer();
-        }, 4000);
-        setTimeout(() => {
-            this.centerPanel.moveTo(POSITIONS.TOP);
-        }, 6000);
-        setTimeout(() => {
-            this.sidePanel.moveTo(POSITIONS.RIGHT);
-            this.sidePanel.adaptTo(PERSONA.KYLO);
-
-            this.centerPanel.moveTo(POSITIONS.BOTTOM);
-            this.centerPanel.adaptTo(PERSONA.KYLO);
-        }, 9000);
-        setTimeout(() => {
-            this.centerPanel.stopTimer();
-        }, 15000);
-
         this.socketConnection();
     }
 
@@ -295,46 +269,92 @@ class PanelManager {
             this.socket.emit('camera_frame', { framedata: data });
         }, 1000);
 
-        this.socket.on('response_message', (msg) => {
-            const json = JSON.parse(msg);
-
-            this.debug.displayDebugInfo(json);
-            this.adaptUserInterface(json.matchedPerson);
-
-            /*        if (json.matchedPerson) {
-                        matchedPerson = matchedPerson.toLowerCase();
-                    }
-                    const matchedPersona = assignMatchedPersonToPersona(matchedPerson);
-            
-                    // debugging is automatically enabled for all faces excluding Leia, Luke, Anakin, Kylo and Rey.
-                    if (matchedPersona === PERSONAS.OTHER_HUMAN) {
-                        showDebugMessages(json, matchedPersona, videoCanvas, boundingBoxCanvas);
-                    } else {
-                        hideDebugMessages(videoCanvas, boundingBoxCanvas);
-                    }
-            
-                    // update UI only every 5 seconds
-                    if (new Date() - lastUserInterfaceUpdate > UI_UPDATE_DELAY_MS) {
-                        if (matchedPerson !== lastMatchedPerson) {
-                            updateUserInterface(matchedPerson, matchedPersona);
-                            lastMatchedPerson = matchedPerson;
-                        }
-                        lastUserInterfaceUpdate = new Date();
-                    }*/
-        });
+        this.socket.on('response_message', (msg) => this.updateUI(msg));
 
     }
 
+    updateUI(msg) {
+        const json = JSON.parse(msg);
+
+        this.debugPanel.displayDebugInfo(json);
+        this.adaptUserInterface(json.matchedPerson);
+
+        /*        if (json.matchedPerson) {
+                    matchedPerson = matchedPerson.toLowerCase();
+                }
+                const matchedPersona = assignMatchedPersonToPersona(matchedPerson);
+        
+                // debugging is automatically enabled for all faces excluding Leia, Luke, Anakin, Kylo and Rey.
+                if (matchedPersona === KNOWN_PERSONSS.OTHER_HUMAN) {
+                    showDebugMessages(json, matchedPersona, videoCanvas, boundingBoxCanvas);
+                } else {
+                    hideDebugMessages(videoCanvas, boundingBoxCanvas);
+                }
+        
+                // update UI only every 5 seconds
+                if (new Date() - lastUserInterfaceUpdate > UI_UPDATE_DELAY_MS) {
+                    if (matchedPerson !== lastMatchedPerson) {
+                        updateUserInterface(matchedPerson, matchedPersona);
+                        lastMatchedPerson = matchedPerson;
+                    }
+                    lastUserInterfaceUpdate = new Date();
+                }*/
+    }
+
     adaptUserInterface(matchedPerson) {
-        let persona;
-        for (let p in PERSONA) {
-            if (matchedPerson === p) {
-                persona = p;
-                break;
+        if (matchedPerson === null || matchedPerson === undefined) {
+            console.log('no person');
+            this.debugPanel.hide();
+            this.centerPanel.hide();
+            this.sidePanel.hide();
+        } else if (matchedPerson === KNOWN_PERSONS.UNKNOWN) {
+            console.log('unknown');
+            this.debugPanel.show();
+            this.centerPanel.hide();
+            this.sidePanel.hide();
+            return;
+        } else {
+            for (let p in KNOWN_PERSONS) {
+                if (matchedPerson === KNOWN_PERSONS[p]) {
+                    console.log(`matched ${p}`);
+                    this.debugPanel.hide();
+                    this.centerPanel.show();
+                    this.centerPanel.adaptTo(KNOWN_PERSONS[p]);
+                    this.sidePanel.show();
+                    this.sidePanel.adaptTo(KNOWN_PERSONS[p]);
+                    break;
+                }
             }
         }
-        console.log(persona);
-        //this.sidePanel.adaptTo(persona);
-        //this.centerPanel.adaptTo(persona);
+    }
+
+    dummyAnimation() {
+        this.sidePanel.hide();
+        this.sidePanel.adaptTo(KNOWN_PERSONS.KYLO);
+        this.centerPanel.adaptTo(KNOWN_PERSONS.KYLO);
+        this.centerPanel.hide();
+
+        setTimeout(() => {
+            this.debug.hide();
+            this.sidePanel.show();
+            this.centerPanel.show();
+            this.sidePanel.moveTo(POSITIONS.LEFT);
+            this.sidePanel.adaptTo(KNOWN_PERSONS.ANAKIN);
+            this.centerPanel.adaptTo(KNOWN_PERSONS.ANAKIN);
+            this.centerPanel.startTimer();
+        }, 4000);
+        setTimeout(() => {
+            this.centerPanel.moveTo(POSITIONS.TOP);
+        }, 6000);
+        setTimeout(() => {
+            this.sidePanel.moveTo(POSITIONS.RIGHT);
+            this.sidePanel.adaptTo(KNOWN_PERSONS.KYLO);
+
+            this.centerPanel.moveTo(POSITIONS.BOTTOM);
+            this.centerPanel.adaptTo(KNOWN_PERSONS.KYLO);
+        }, 9000);
+        setTimeout(() => {
+            this.centerPanel.stopTimer();
+        }, 15000);
     }
 }
