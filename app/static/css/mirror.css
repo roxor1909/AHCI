@@ -22,17 +22,38 @@ body {
     margin: 0;
     padding: 0;
     background-color: black;
+    overflow: hidden;
 }
 
 #svg {
-    width: 99vw;
-    height: 99vh;
+    width: 100vw;
+    height: 100vh;
 }
 
 #video {
     position: absolute;
-    top: 10rem;
-    right: 4.4rem;
-    width: 15rem;
+    top: 1.5rem;
+    right: 16.6rem;
+    width: 22.6rem;
     z-index: -1;
+}
+
+#recognition-canvas {
+    position: absolute;
+    top: 1.5rem;
+    right: 16.6rem;
+    width: 22.6rem;
+}
+
+#debug-text {
+    position: absolute;
+    top: 20rem;
+    right: 7.2rem;
+    overflow-wrap: break-word;
+    width: 15rem;
+    height: 20rem;
+    z-index: 1;
+    font-family: sans-serif;
+    font-size: 1rem;
+    color: #FF9900;
 }

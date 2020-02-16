@@ -3,6 +3,8 @@
  **/
 const SCREEN_WIDTH = window.innerWidth;
 const SCREEN_HEIGHT = window.innerHeight;
+const CAMERA_WIDTH = 640;
+const CAMERA_HEIGHT = 480;
 const ANIMATION_DUR_IN_MILLI = 500;
 const EASING = mina.easeinout;
 const POSITIONS = Object.freeze({
@@ -12,16 +14,17 @@ const POSITIONS = Object.freeze({
     TOP: Symbol('top'),
 });
 const PERSONA = Object.freeze({
-    ANAKIN: Symbol('Anakin'),
-    KYLO: Symbol('Kylo'),
-    LEIA: Symbol('Leia'),
-    LUKE: Symbol('Luke'),
-    REY: Symbol('Rey'),
+    ANAKIN: 'anakin',
+    KYLO: 'kylo',
+    LEIA: 'leia',
+    LUKE: 'luke',
+    REY: 'rey',
+    UNKNOWN: 'unknown',
 });
 
 class SidePanel {
 
-    constructor(position, username = '', showDebug = false) {
+    constructor(position, username = '') {
         this.position = position;
         this.width = 350;
 
@@ -30,18 +33,20 @@ class SidePanel {
             horizontalOffset = SCREEN_WIDTH - this.width;
         }
 
-        this.video = document.getElementById('video');
-        navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } }).then((stream) => this.video.srcObject = stream);
-        this.gif = paper.image('static/images/deathStarWhite.gif', 60 + horizontalOffset, 160, 200, 200);
-        this.panel = paper.image('static/images/sidePanel.svg', 0 + horizontalOffset, 10, 320, SCREEN_HEIGHT - 20);
-        this.text = paper.text(160 + horizontalOffset, 80, username)
+        this.gif = paper.image('static/images/deathStarWhite.gif', 80 + horizontalOffset, 160, 200, 200);
+        this.panel = paper.image('static/images/sidePanel.svg', 20 + horizontalOffset, 10, 320, SCREEN_HEIGHT - 20);
+        this.text = paper.text(180 + horizontalOffset, 80, username)
         this.text.attr({ fill: 'black', 'font-size': 50, 'font-family': 'Starjedi', 'text-anchor': 'middle' });
 
-        if (showDebug === true) {
-            this.showDebug();
-        } else {
-            this.hideDebug();
-        }
+        this.group = paper.g(this.gif, this.panel, this.text);
+    }
+
+    hide() {
+        this.group.attr({ visibility: 'hidden' });
+    }
+
+    show() {
+        this.group.attr({ visibility: '' });
     }
 
     adaptTo(persona) {
@@ -56,7 +61,7 @@ class SidePanel {
             this.panel.attr({ 'xlink:href': 'static/images/sidePanel.svg' });
         }
 
-        this.text.attr({ text: persona.description.toString().toLowerCase() });
+        this.text.attr({ text: persona.toString().toLowerCase() });
     }
 
     moveTo(position) {
@@ -67,37 +72,12 @@ class SidePanel {
 
         let distance = 0;
         if (position === POSITIONS.LEFT) {
-            this.video.style.left = '2.5rem';
-            this.video.style.right = null;
             distance = -SCREEN_WIDTH + this.width;
-        } else if (position === POSITIONS.RIGHT) {
-            this.video.style.left = null;
-            this.video.style.right = '4.4rem';
         }
 
-        this.gif.animate({
+        this.group.animate({
             transform: `t${distance},0`,
         }, ANIMATION_DUR_IN_MILLI, EASING);
-        this.panel.animate({
-            transform: `t${distance},0`,
-        }, ANIMATION_DUR_IN_MILLI, EASING);
-        this.text.animate({
-            transform: `t${distance},0`,
-        }, ANIMATION_DUR_IN_MILLI, EASING);
-    }
-
-    showDebug() {
-        this.gif.attr({
-            visibility: 'hidden'
-        });
-        this.video.style.display = 'block';
-    }
-
-    hideDebug() {
-        this.gif.attr({
-            visibility: ''
-        });
-        this.video.style.display = 'none';
     }
 
 }
@@ -116,6 +96,16 @@ class CenterPanel {
         this.gif.attr({
             visibility: 'hidden',
         });
+
+        this.group = paper.g(this.gif, this.panel, this.timer);
+    }
+
+    hide() {
+        this.group.attr({ visibility: 'hidden' });
+    }
+
+    show() {
+        this.group.attr({ visibility: '' });
     }
 
     adaptTo(persona) {
@@ -182,46 +172,169 @@ class CenterPanel {
 
 }
 
-class PanelManager {
-
+class DebugPanel {
     constructor() {
-        this.sidePanel = new SidePanel(POSITIONS.RIGHT);
-        this.centerPanel = new CenterPanel();
+        this.video = document.getElementById('video');
+        navigator.mediaDevices.getUserMedia({ video: { width: CAMERA_WIDTH, height: CAMERA_HEIGHT } }).then((stream) => this.video.srcObject = stream);
 
-        //paper.image('static/images/badgeTrooper.svg', SCREEN_WIDTH / 2 - 150, SCREEN_HEIGHT / 2 - 150, 300, 300);
-        //paper.image('static/images/stormtrooperGreen.png', 110 + horizontalOffset, 400, 100, 100);
-        //sidePanel.showDebug();
-        this.sidePanel.adaptTo(PERSONA.KYLO);
-        this.centerPanel.adaptTo(PERSONA.KYLO);
+        this.boundingBoxCanvas = document.getElementById('recognition-canvas');
+        this.boundingBoxCanvas.width = CAMERA_WIDTH;
+        this.boundingBoxCanvas.height = CAMERA_HEIGHT;
+        this.debugText = document.querySelector('#debug-text pre')
 
-        /*        setTimeout(() => {
-                    sidePanel.hideDebug();
-                    sidePanel.moveTo(POSITIONS.LEFT);
-                    sidePanel.adaptTo(PERSONA.ANAKIN);
-                    centerPanel.adaptTo(PERSONA.ANAKIN);
-                    centerPanel.startTimer();
-                }, 2000);
-                setTimeout(() => {
-                    centerPanel.moveTo(POSITIONS.TOP);
-                }, 5000);
-                setTimeout(() => {
-                    sidePanel.moveTo(POSITIONS.RIGHT);
-                    sidePanel.adaptTo(PERSONA.KYLO);
-        
-                    centerPanel.moveTo(POSITIONS.BOTTOM);
-                    centerPanel.adaptTo(PERSONA.KYLO);
-                }, 8000);
-                setTimeout(() => {
-                    centerPanel.stopTimer();
-                }, 15000);*/
+        this.debugPanel = paper.image('static/images/debugPanel.svg', SCREEN_WIDTH - 400, 290, 400, 800);
+        this.webcam = paper.image('static/images/webcamPanel.svg', SCREEN_WIDTH - 1000, 10, 1000, 300);
+        this.gif = paper.image('static/images/fingerprintYellow.gif', SCREEN_WIDTH - 870, 80, 230, 150);
+
+        this.group = paper.g(this.debugPanel, this.webcam, this.gif);
+
+        this.show();
     }
 
-    adaptTo(persona) {
-        this.sidePanel.adaptTo(persona);
-        this.centerPanel.adaptTo(persona);
+    hide() {
+        this.visible = false;
+        this.group.attr({ visibility: 'hidden' });
+        this.boundingBoxCanvas.style.display = 'none';
+        this.video.style.display = 'none';
+        this.debugText.style.display = 'none';
+    }
+
+    show() {
+        this.visible = true;
+        this.group.attr({ visibility: '' });
+        this.boundingBoxCanvas.style.display = 'block';
+        this.video.style.display = 'block';
+        this.debugText.style.display = 'block';
+    }
+
+    displayDebugInfo(json) {
+        if (!this.visible) {
+            return;
+        }
+
+        this.debugText.innerHTML = JSON.stringify(json, undefined, 2);
+
+        const boundingBoxCanvasContext = this.boundingBoxCanvas.getContext('2d');
+        boundingBoxCanvasContext.clearRect(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
+
+        json.boundingBoxes.forEach(el => {
+            if (el['class'] !== 'person') {
+                return;
+            }
+
+            const bb = el['bounding_box'];
+            const xDist = bb['xmax'] - bb['xmin'];
+            const yDist = bb['ymax'] - bb['ymin'];
+
+            boundingBoxCanvasContext.strokeStyle = "#FF9900";
+            boundingBoxCanvasContext.lineWidth = 5;
+            boundingBoxCanvasContext.beginPath();
+            boundingBoxCanvasContext.rect(bb['xmin'], bb['ymin'], xDist, yDist);
+            boundingBoxCanvasContext.stroke();
+        });
     }
 
 }
 
-const paper = Snap('#svg');
-new PanelManager();
+class PanelManager {
+
+    constructor() {
+        this.debug = new DebugPanel();
+        this.sidePanel = new SidePanel(POSITIONS.RIGHT);
+        this.centerPanel = new CenterPanel();
+
+        this.sidePanel.hide();
+        this.sidePanel.adaptTo(PERSONA.KYLO);
+        this.centerPanel.adaptTo(PERSONA.KYLO);
+        this.centerPanel.hide();
+
+        setTimeout(() => {
+            this.debug.hide();
+            this.sidePanel.show();
+            this.centerPanel.show();
+            this.sidePanel.moveTo(POSITIONS.LEFT);
+            this.sidePanel.adaptTo(PERSONA.ANAKIN);
+            this.centerPanel.adaptTo(PERSONA.ANAKIN);
+            this.centerPanel.startTimer();
+        }, 4000);
+        setTimeout(() => {
+            this.centerPanel.moveTo(POSITIONS.TOP);
+        }, 6000);
+        setTimeout(() => {
+            this.sidePanel.moveTo(POSITIONS.RIGHT);
+            this.sidePanel.adaptTo(PERSONA.KYLO);
+
+            this.centerPanel.moveTo(POSITIONS.BOTTOM);
+            this.centerPanel.adaptTo(PERSONA.KYLO);
+        }, 9000);
+        setTimeout(() => {
+            this.centerPanel.stopTimer();
+        }, 15000);
+
+        this.socketConnection();
+    }
+
+    socketConnection() {
+        this.socket = io();
+        this.socket.on('connection', (socket) => {
+            console.log('connected to server');
+            socket.emit('camera_frame', { camerWidth: CAMERA_WIDTH, camerHeight: CAMERA_HEIGHT });
+            socket.on('disconnect', () => {
+                console.log('disconnected from server');
+            });
+        });
+
+        setInterval(() => {
+            const videoCanvas = document.getElementById('video');
+            const canvas = document.createElement('canvas');
+            canvas.width = videoCanvas.videoWidth;
+            canvas.height = videoCanvas.videoHeight;
+            canvas.getContext('2d').drawImage(videoCanvas, 0, 0);
+            // returns a frame encoded in base64
+            const data = canvas.toDataURL();
+            this.socket.emit('camera_frame', { framedata: data });
+        }, 1000);
+
+        this.socket.on('response_message', (msg) => {
+            const json = JSON.parse(msg);
+
+            this.debug.displayDebugInfo(json);
+            this.adaptUserInterface(json.matchedPerson);
+
+            /*        if (json.matchedPerson) {
+                        matchedPerson = matchedPerson.toLowerCase();
+                    }
+                    const matchedPersona = assignMatchedPersonToPersona(matchedPerson);
+            
+                    // debugging is automatically enabled for all faces excluding Leia, Luke, Anakin, Kylo and Rey.
+                    if (matchedPersona === PERSONAS.OTHER_HUMAN) {
+                        showDebugMessages(json, matchedPersona, videoCanvas, boundingBoxCanvas);
+                    } else {
+                        hideDebugMessages(videoCanvas, boundingBoxCanvas);
+                    }
+            
+                    // update UI only every 5 seconds
+                    if (new Date() - lastUserInterfaceUpdate > UI_UPDATE_DELAY_MS) {
+                        if (matchedPerson !== lastMatchedPerson) {
+                            updateUserInterface(matchedPerson, matchedPersona);
+                            lastMatchedPerson = matchedPerson;
+                        }
+                        lastUserInterfaceUpdate = new Date();
+                    }*/
+        });
+
+    }
+
+    adaptUserInterface(matchedPerson) {
+        let persona;
+        for (let p in PERSONA) {
+            if (matchedPerson === p) {
+                persona = p;
+                break;
+            }
+        }
+        console.log(persona);
+        //this.sidePanel.adaptTo(persona);
+        //this.centerPanel.adaptTo(persona);
+    }
+}
