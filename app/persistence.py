@@ -46,7 +46,7 @@ def create_schema_if_not_exists(db_connection):
 def get_tb_data_for_user(db_connection, user_name):
     c = db_connection.cursor()
 
-    query1 = "SELECT timestamp, duration FROM tb_data WHERE user_name=?;"
+    query1 = "SELECT timestamp, duration FROM tb_data WHERE user_name=? ORDER BY timestamp ASC;"
 
     c.execute(query1, (user_name, ))
     res = c.fetchall()
@@ -86,13 +86,17 @@ def insert_achievement_for_user(db_connection, user_name, timestamp, achievement
 def create_dummy_data(db_connection):
     now = datetime.now()
     yesterday = now - timedelta(days=1)
-    two_days_ago = yesterday - timedelta(days=1)
+    two_days_ago = now - timedelta(days=2)
+    three_days_ago = now - timedelta(days=3)
     normal_toothbrush = 3*60
     persona = ['kylo', 'leia', 'luke', 'rey']
     for person in persona:
+        three_days_ago_brush = normal_toothbrush + (random.randint(0,30) - 15)
         two_days_ago_brush = normal_toothbrush + (random.randint(0,30) - 15)
         yesterday_brush = normal_toothbrush + (random.randint(0,30) - 15)
         todays_brush = normal_toothbrush + (random.randint(0,30) - 15)
+
+        insert_tb_data_for_user(db_connection, person, three_days_ago, three_days_ago_brush)
         insert_tb_data_for_user(db_connection, person, two_days_ago, two_days_ago_brush)
         insert_tb_data_for_user(db_connection, person, yesterday, yesterday_brush)
-        insert_tb_data_for_user(db_connection, person, now, todays_brush)
+        #insert_tb_data_for_user(db_connection, person, now, todays_brush)

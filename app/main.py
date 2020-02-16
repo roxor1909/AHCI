@@ -1,5 +1,6 @@
 import os
 from flask import Flask, render_template
+from flask import jsonify
 from flask_socketio import SocketIO
 
 import sys
@@ -16,8 +17,6 @@ from tflite_runtime.interpreter import Interpreter
 
 from layoutCalculation import *
 from image_processing import FaceRecognition
-
-import graph_plotting
 
 import persistence
 
@@ -44,6 +43,13 @@ socketio = SocketIO(app)
 @app.route('/')
 def root_route():
     return render_template('mirror.html')
+
+@app.route('/stats/<string:user>')
+def stats_route(user):
+    conn = persistence.get_connection()
+    result = persistence.get_tb_data_for_user(conn, user)
+    y = [res[1] for res in result]
+    return jsonify(y)
 
 @socketio.on('connect')
 def on_connect():
@@ -209,10 +215,5 @@ if __name__ == '__main__':
 
     _, input_height, input_width, _ = interpreter.get_input_details()[0]['shape']
 
-    graph_plotting.plot_graph_for_persona('luke')
-    graph_plotting.plot_graph_for_persona('leia')
-    graph_plotting.plot_graph_for_persona('kylo')
-    graph_plotting.plot_graph_for_persona('rey')
-    
     print('Starting server')
     socketio.run(app, host='0.0.0.0', debug=debug, port=port, use_reloader=use_reloader)

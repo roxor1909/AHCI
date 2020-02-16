@@ -230,6 +230,75 @@ class DebugPanel {
 
 }
 
+class StatsPanel {
+    constructor() {
+    }
+
+    adaptTo(person) {
+
+        let colors = ['#26A67B', '#40E5AD', '#83FFD6', '#B4FFE6'];
+        if (person === KNOWN_PERSONS.KYLO) {
+            colors = [ '#B50900', '#E4281D', '#EA746D', '#FFC6C3'];
+        }
+        fetch(`/stats/${person}`)
+            .then((response) => {
+                return response.json();
+            })
+            .then((measures) => {
+                this.displayGraph(measures, colors);
+            });
+    }
+
+    hide() {
+        if (this.group) {
+            this.group.attr({ visibility: 'hidden' });
+        }
+    }
+
+    show() {
+        if (this.group) {
+            this.group.attr({ visibility: '' });
+        }
+    }
+
+    displayGraph(measures, colors) {
+        if (this.group) {
+            this.group.remove();
+        }
+
+        let max = Math.pow(Math.max(...measures), 5);
+        if (max < 0 ) {
+            max = 1024;
+        }
+        
+        const elements = [];
+        const times = ['3d ago', '2d ago', '1d ago', 'today'];
+
+        times.forEach((time, i) => {
+            
+            // if no measurement present for that day, then use default value of 5 to show a small bar
+            const measure = measures.length > i ? measures[i] : 2;
+            const barHeight = 35;
+            const barWidth = Math.pow(measure, 5) / max * 100;
+            const x = 100;
+            const y = barHeight * i * 1.4;
+            
+            const bar = paper.rect(x, y, 50, 50, 5).attr({
+                fill: colors[i]
+            });
+            bar.animate({ x: x, y: y, height: barHeight, width: barWidth }, 1100, mina.elastic);
+            elements.push(bar);
+
+            const text = paper.text(x - 80, y + barHeight / 2 + 5, time);
+            text.attr({ fill: colors[i], 'font-size': 20, 'font-family': 'LLPIXEL3', 'text-anchor': 'start' });
+            elements.push(text);
+        });
+
+        this.group = paper.group(...elements);
+        this.group.transform(`t${SCREEN_WIDTH - 280},${SCREEN_HEIGHT / 2 - 145}`);
+    }
+}
+
 class PanelManager {
 
     constructor() {
@@ -240,6 +309,8 @@ class PanelManager {
         this.centerPanel = new CenterPanel();
         this.centerPanel.hide();
         this.socketConnection();
+        this.statsPanel = new StatsPanel();
+        this.statsPanel.hide();
     }
 
     socketConnection() {
@@ -268,6 +339,7 @@ class PanelManager {
     }
 
     updateUI(msg) {
+        
         const json = JSON.parse(msg);
         this.adaptUserInterface(json.matchedPerson, json.isBrushing);
         if (this.debugIsEnabled) {
@@ -296,6 +368,7 @@ class PanelManager {
             this.debugPanel.hide();
             this.centerPanel.hide();
             this.sidePanel.hide();
+            this.statsPanel.hide();
             return;
         }
 
@@ -305,6 +378,7 @@ class PanelManager {
             this.debugPanel.show();
             this.centerPanel.hide();
             this.sidePanel.hide();
+            this.statsPanel.hide();
             return;
         }
 
@@ -318,6 +392,8 @@ class PanelManager {
                 this.centerPanel.adaptTo(KNOWN_PERSONS[p]);
                 this.sidePanel.show();
                 this.sidePanel.adaptTo(KNOWN_PERSONS[p]);
+                this.statsPanel.show();
+                this.statsPanel.adaptTo(KNOWN_PERSONS[p]);
                 break;
             }
         }
