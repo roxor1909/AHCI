@@ -6,6 +6,7 @@ const SCREEN_HEIGHT = window.innerHeight;
 const CAMERA_WIDTH = 640;
 const CAMERA_HEIGHT = 480;
 const ANIMATION_DUR_IN_MILLI = 500;
+const IDEAL_TOOTHBRUSH_DURATION = 180;
 const EASING = mina.easeinout;
 const POSITIONS = Object.freeze({
     RIGHT: Symbol('right'),
@@ -96,8 +97,9 @@ class CenterPanel {
         this.gif.attr({
             visibility: 'hidden',
         });
+        this.progressBar = paper.rect(SCREEN_WIDTH / 2 - this.width + 49, SCREEN_HEIGHT - this.height + 105, 0, 30, 0);
 
-        this.group = paper.g(this.gif, this.panel, this.timer);
+        this.group = paper.g(this.progressBar, this.gif, this.panel, this.timer);
     }
 
     hide() {
@@ -110,9 +112,11 @@ class CenterPanel {
         if (person === KNOWN_PERSONS.KYLO) {
             this.gif.attr({ 'xlink:href': 'static/images/waveRed.gif' });
             this.panel.attr({ 'xlink:href': 'static/images/centerPanelRed.svg' });
+            this.color = '#b5060d';
         } else if (person === KNOWN_PERSONS.REY || person === KNOWN_PERSONS.ANAKIN || person === KNOWN_PERSONS.LEIA || person === KNOWN_PERSONS.LUKE) {
             this.gif.attr({ 'xlink:href': 'static/images/waveGreen.gif' });
             this.panel.attr({ 'xlink:href': 'static/images/centerPanelGreen.svg' });
+            this.color = '#19bfa9';
         } else {
             this.gif.attr({ 'xlink:href': 'static/images/wave.gif' });
             this.panel.attr({ 'xlink:href': 'static/images/centerPanel.svg' });
@@ -152,7 +156,14 @@ class CenterPanel {
             let minutes = (currentTimerValueInSeconds / 60).toString().split('.')[0];
             this.timer.attr({ text: `${minutes}:${seconds}` });
             currentTimerValueInSeconds++;
-        }
+
+            const progress = Math.min(currentTimerValueInSeconds / IDEAL_TOOTHBRUSH_DURATION, 1);
+            const progressBarWidth = 442 * progress;
+            this.progressBar.animate({
+                width: progressBarWidth,
+                fill: this.color,
+            }, 1100, mina.backout);
+        };
         timer();
         this.timerUpdate = setInterval(timer, 1000);
     }
