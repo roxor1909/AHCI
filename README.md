@@ -16,6 +16,24 @@ docker build -t ahci -f DockerfileRaspberryPi .
 docker run -p 8080:8080 ahci
 ```
 
+
+## SVG
+
+* Use JS lib Snap.svg:
+  * Built-in animations
+  * Supports GIF and videos
+  * Easily draw charts
+* Create SVG files in Gravit Designer
+* Manually integrate fonts into SVG files (base64 encoded because all other options didn't work)
+* Color Palette:
+  * Green bright: #40e5ad
+  * Green dark: #19bfa9
+  * Red bright: #e4281d
+  * Red dark: #b5060d
+
+* Ursprünglich mit Matploblib im Backend geplottet. Caching Problem
+* Idee mit Persona: child, adult, senior
+
 ## Development
 
 ### Docker

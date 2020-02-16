@@ -45,11 +45,9 @@ class SidePanel {
         this.group.attr({ visibility: 'hidden' });
     }
 
-    show() {
+    adaptTo(person, position) {
         this.group.attr({ visibility: '' });
-    }
 
-    adaptTo(person) {
         if (person === KNOWN_PERSONS.KYLO) {
             this.gif.attr({ 'xlink:href': 'static/images/deathStarRed.gif' });
             this.panel.attr({ 'xlink:href': 'static/images/sidePanelRed.svg' });
@@ -62,6 +60,8 @@ class SidePanel {
         }
 
         this.text.attr({ text: person.toString().toLowerCase() });
+
+        this.moveTo(position);
     }
 
     moveTo(position) {
@@ -104,11 +104,9 @@ class CenterPanel {
         this.group.attr({ visibility: 'hidden' });
     }
 
-    show() {
+    adaptTo(person, position) {
         this.group.attr({ visibility: '' });
-    }
 
-    adaptTo(person) {
         if (person === KNOWN_PERSONS.KYLO) {
             this.gif.attr({ 'xlink:href': 'static/images/waveRed.gif' });
             this.panel.attr({ 'xlink:href': 'static/images/centerPanelRed.svg' });
@@ -119,6 +117,8 @@ class CenterPanel {
             this.gif.attr({ 'xlink:href': 'static/images/wave.gif' });
             this.panel.attr({ 'xlink:href': 'static/images/centerPanel.svg' });
         }
+
+        this.moveTo(position);
     }
 
     moveTo(position) {
@@ -131,13 +131,7 @@ class CenterPanel {
             distance = -SCREEN_HEIGHT + this.height;
         }
 
-        this.panel.animate({
-            transform: `t0,${distance}`,
-        }, ANIMATION_DUR_IN_MILLI, EASING);
-        this.timer.animate({
-            transform: `t0,${distance}`,
-        }, ANIMATION_DUR_IN_MILLI, EASING);
-        this.gif.animate({
+        this.group.animate({
             transform: `t0,${distance}`,
         }, ANIMATION_DUR_IN_MILLI, EASING);
     }
@@ -234,18 +228,35 @@ class StatsPanel {
     constructor() {
     }
 
-    adaptTo(person) {
+    /**
+     * 
+     * @param {*} person 
+     * @param {*} position 
+     * @param {boolean} forceUpdateStats Force to request new tooth brush durations from backend's database.
+     */
+    adaptTo(person, position, forceUpdateStats = false) {
+        if (this.group) {
+            this.group.attr({ visibility: '' });
+        }
 
         let colors = ['#26A67B', '#40E5AD', '#83FFD6', '#B4FFE6'];
         if (person === KNOWN_PERSONS.KYLO) {
-            colors = [ '#B50900', '#E4281D', '#EA746D', '#FFC6C3'];
+            colors = ['#B50900', '#E4281D', '#EA746D', '#FFC6C3'];
         }
+
+        if (this.lastMatchedPerson === person && forceUpdateStats === false) {
+            this.moveTo(position);
+            return;
+        }
+        this.lastMatchedPerson = person;
+
         fetch(`/stats/${person}`)
             .then((response) => {
                 return response.json();
             })
             .then((measures) => {
                 this.displayGraph(measures, colors);
+                this.moveTo(position);
             });
     }
 
@@ -255,10 +266,20 @@ class StatsPanel {
         }
     }
 
-    show() {
-        if (this.group) {
-            this.group.attr({ visibility: '' });
+    moveTo(position) {
+        if (this.position === position) {
+            return;
         }
+        this.position = position;
+
+        let distance = 0;
+        if (position === POSITIONS.LEFT) {
+            distance = -SCREEN_WIDTH + 350;
+        }
+
+        this.group.animate({
+            transform: `t${distance},0`,
+        }, ANIMATION_DUR_IN_MILLI, EASING);
     }
 
     displayGraph(measures, colors) {
@@ -267,22 +288,22 @@ class StatsPanel {
         }
 
         let max = Math.pow(Math.max(...measures), 5);
-        if (max < 0 ) {
+        if (max < 0) {
             max = 1024;
         }
-        
+
         const elements = [];
         const times = ['3d ago', '2d ago', '1d ago', 'today'];
 
         times.forEach((time, i) => {
-            
+
             // if no measurement present for that day, then use default value of 5 to show a small bar
             const measure = measures.length > i ? measures[i] : 2;
             const barHeight = 35;
             const barWidth = Math.pow(measure, 5) / max * 100;
-            const x = 100;
-            const y = barHeight * i * 1.4;
-            
+            const x = SCREEN_WIDTH - 180;
+            const y = 400 + barHeight * i * 1.4;
+
             const bar = paper.rect(x, y, 50, 50, 5).attr({
                 fill: colors[i]
             });
@@ -295,7 +316,6 @@ class StatsPanel {
         });
 
         this.group = paper.group(...elements);
-        this.group.transform(`t${SCREEN_WIDTH - 280},${SCREEN_HEIGHT / 2 - 145}`);
     }
 }
 
@@ -308,9 +328,10 @@ class PanelManager {
         this.sidePanel.hide();
         this.centerPanel = new CenterPanel();
         this.centerPanel.hide();
-        this.socketConnection();
         this.statsPanel = new StatsPanel();
         this.statsPanel.hide();
+        this.socketConnection();
+        //this.dummyAnimation();
     }
 
     socketConnection() {
@@ -339,7 +360,7 @@ class PanelManager {
     }
 
     updateUI(msg) {
-        
+
         const json = JSON.parse(msg);
         this.adaptUserInterface(json.matchedPerson, json.isBrushing);
         if (this.debugIsEnabled) {
@@ -364,7 +385,7 @@ class PanelManager {
         this.centerPanel.stopTimer();
 
         if (matchedPerson === null || matchedPerson === undefined) {
-            console.log('no person');
+            console.log('no person -> blank screen');
             this.debugPanel.hide();
             this.centerPanel.hide();
             this.sidePanel.hide();
@@ -388,12 +409,9 @@ class PanelManager {
                 console.log(`matched ${p}`);
                 this.centerPanel.startTimer();
                 this.debugPanel.hide();
-                this.centerPanel.show();
-                this.centerPanel.adaptTo(KNOWN_PERSONS[p]);
-                this.sidePanel.show();
-                this.sidePanel.adaptTo(KNOWN_PERSONS[p]);
-                this.statsPanel.show();
-                this.statsPanel.adaptTo(KNOWN_PERSONS[p]);
+                this.centerPanel.adaptTo(KNOWN_PERSONS[p], POSITIONS.BOTTOM);
+                this.sidePanel.adaptTo(KNOWN_PERSONS[p], POSITIONS.RIGHT);
+                this.statsPanel.adaptTo(KNOWN_PERSONS[p], POSITIONS.RIGHT);
                 break;
             }
         }
@@ -403,29 +421,24 @@ class PanelManager {
         this.debugPanel.show();
         this.debugIsEnabled = true;
         this.sidePanel.hide();
-        this.sidePanel.adaptTo(KNOWN_PERSONS.KYLO);
-        this.centerPanel.adaptTo(KNOWN_PERSONS.KYLO);
         this.centerPanel.hide();
+        this.statsPanel.hide();
 
         setTimeout(() => {
             this.debugPanel.hide();
             this.debugIsEnabled = false;
-            this.sidePanel.show();
-            this.centerPanel.show();
-            this.sidePanel.moveTo(POSITIONS.LEFT);
-            this.sidePanel.adaptTo(KNOWN_PERSONS.ANAKIN);
+            this.sidePanel.adaptTo(KNOWN_PERSONS.ANAKIN, POSITIONS.LEFT);
             this.centerPanel.adaptTo(KNOWN_PERSONS.ANAKIN);
             this.centerPanel.startTimer();
+            this.statsPanel.adaptTo(KNOWN_PERSONS.ANAKIN, POSITIONS.LEFT);
         }, 4000);
         setTimeout(() => {
-            this.centerPanel.moveTo(POSITIONS.TOP);
+            this.centerPanel.adaptTo(KNOWN_PERSONS.ANAKIN, POSITIONS.TOP);
         }, 6000);
         setTimeout(() => {
-            this.sidePanel.moveTo(POSITIONS.RIGHT);
-            this.sidePanel.adaptTo(KNOWN_PERSONS.KYLO);
-
-            this.centerPanel.moveTo(POSITIONS.BOTTOM);
-            this.centerPanel.adaptTo(KNOWN_PERSONS.KYLO);
+            this.sidePanel.adaptTo(KNOWN_PERSONS.KYLO, POSITIONS.RIGHT);
+            this.centerPanel.adaptTo(KNOWN_PERSONS.KYLO, POSITIONS.BOTTOM);
+            this.statsPanel.adaptTo(KNOWN_PERSONS.KYLO, POSITIONS.RIGHT);
         }, 9000);
         setTimeout(() => {
             this.centerPanel.stopTimer();
