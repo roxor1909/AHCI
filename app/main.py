@@ -25,8 +25,6 @@ labels = None
 interpreter = None
 face_recognition = None
 
-DB_CONNECTION = None
-
 IS_BRUSHING = False
 BRUSHING_START = datetime.datetime.now()
 
@@ -46,8 +44,9 @@ def root_route():
 
 @app.route('/stats/<string:user>')
 def stats_route(user):
-    conn = persistence.get_connection()
-    result = persistence.get_tb_data_for_user(conn, user)
+    connection = persistence.get_connection()
+    result = persistence.get_tb_data_for_user(connection, user)
+    connection.close()
     y = [res[1] for res in result]
     return jsonify(y)
 
@@ -62,12 +61,12 @@ def on_disconnect():
 
 
 @socketio.on('camera_frame')
-def handle_camera_frame_event(inJson, methods=['POST']):
+def handle_camera_frame_event(json_input, methods=['POST']):
 
-    if 'framedata' in inJson:
-        val = inJson['framedata'].split(',')[1]
-        imgData = base64.b64decode(val)
-        img = Image.open(io.BytesIO(imgData))
+    if 'framedata' in json_input:
+        val = json_input['framedata'].split(',')[1]
+        img_data = base64.b64decode(val)
+        img = Image.open(io.BytesIO(img_data))
 
         img = img.convert('RGB').resize(
             (input_width, input_height), Image.ANTIALIAS)
@@ -201,10 +200,11 @@ if __name__ == '__main__':
         dirname, 'object_detection/static')
 
     # Initialize globals
-    DB_CONNECTION = persistence.get_connection()
-    persistence.drop_all_data(DB_CONNECTION)
-    persistence.create_schema_if_not_exists(DB_CONNECTION)
-    persistence.create_dummy_data(DB_CONNECTION)
+    connection = persistence.get_connection()
+    persistence.drop_all_data(connection)
+    persistence.create_schema_if_not_exists(connection)
+    persistence.create_dummy_data(connection)
+    connection.close()
 
     labels = load_labels(os.path.join(
         object_detection_static_path, 'coco_labels.txt'))

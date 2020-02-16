@@ -17,6 +17,13 @@ docker run -p 8080:8080 ahci
 ```
 
 
+## AUI aspects
+
+* Depending on the detected user, the UI changes its appearance (colors, change displayed name, change statistics).
+* Depending on the users position in front of the screen / mirror, the panels of the UI are moved to another position.
+* The UI classifies users into different personas: child, adult or senior. Depending on the persona, different UI elements are visualized.
+* Design language of the UI is strongly inspired by the original user interfaces from the Star Wars movies. See
+
 ## SVG
 
 * Use JS lib Snap.svg:
