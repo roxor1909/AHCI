@@ -38,6 +38,6 @@ class FaceRecognition:
             # best_match_index = np.argmin(face_distances)
             # if matches[best_match_index]:
             #    name = self.known_face_names[best_match_index]
-            return "unkown"
+            return "unknown"
 
         return None

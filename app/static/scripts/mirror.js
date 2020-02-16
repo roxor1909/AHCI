@@ -192,7 +192,6 @@ class DebugPanel {
     }
 
     hide() {
-        this.visible = false;
         this.group.attr({ visibility: 'hidden' });
         this.boundingBoxCanvas.style.display = 'none';
         this.video.style.display = 'none';
@@ -200,7 +199,6 @@ class DebugPanel {
     }
 
     show() {
-        this.visible = true;
         this.group.attr({ visibility: '' });
         this.boundingBoxCanvas.style.display = 'block';
         this.video.style.display = 'block';
@@ -208,10 +206,6 @@ class DebugPanel {
     }
 
     displayDebugInfo(json) {
-        if (!this.visible) {
-            return;
-        }
-
         this.debugText.innerHTML = JSON.stringify(json, undefined, 2);
 
         const boundingBoxCanvasContext = this.boundingBoxCanvas.getContext('2d');
@@ -275,67 +269,71 @@ class PanelManager {
 
     updateUI(msg) {
         const json = JSON.parse(msg);
-
-        this.debugPanel.displayDebugInfo(json);
-        this.adaptUserInterface(json.matchedPerson);
+        this.adaptUserInterface(json.matchedPerson, json.isBrushing);
+        if (this.debugIsEnabled) {
+            this.debugPanel.displayDebugInfo(json);
+        }
 
         /*        if (json.matchedPerson) {
                     matchedPerson = matchedPerson.toLowerCase();
                 }
                 const matchedPersona = assignMatchedPersonToPersona(matchedPerson);
-        
-                // debugging is automatically enabled for all faces excluding Leia, Luke, Anakin, Kylo and Rey.
-                if (matchedPersona === KNOWN_PERSONSS.OTHER_HUMAN) {
-                    showDebugMessages(json, matchedPersona, videoCanvas, boundingBoxCanvas);
-                } else {
-                    hideDebugMessages(videoCanvas, boundingBoxCanvas);
-                }
-        
-                // update UI only every 5 seconds
-                if (new Date() - lastUserInterfaceUpdate > UI_UPDATE_DELAY_MS) {
-                    if (matchedPerson !== lastMatchedPerson) {
-                        updateUserInterface(matchedPerson, matchedPersona);
-                        lastMatchedPerson = matchedPerson;
-                    }
-                    lastUserInterfaceUpdate = new Date();
-                }*/
+*/
     }
 
-    adaptUserInterface(matchedPerson) {
+    adaptUserInterface(matchedPerson, isBrushing) {
+        this.debugIsEnabled = false;
+
+        if (this.lastMatchedPerson === matchedPerson) {
+            return;
+        }
+
+        this.lastMatchedPerson = matchedPerson;
+        this.centerPanel.stopTimer();
+
         if (matchedPerson === null || matchedPerson === undefined) {
             console.log('no person');
             this.debugPanel.hide();
             this.centerPanel.hide();
             this.sidePanel.hide();
-        } else if (matchedPerson === KNOWN_PERSONS.UNKNOWN) {
-            console.log('unknown');
+            return;
+        }
+
+        if (matchedPerson === KNOWN_PERSONS.UNKNOWN) {
+            console.log('unknown person -> enable debug');
+            this.debugIsEnabled = true;
             this.debugPanel.show();
             this.centerPanel.hide();
             this.sidePanel.hide();
             return;
-        } else {
-            for (let p in KNOWN_PERSONS) {
-                if (matchedPerson === KNOWN_PERSONS[p]) {
-                    console.log(`matched ${p}`);
-                    this.debugPanel.hide();
-                    this.centerPanel.show();
-                    this.centerPanel.adaptTo(KNOWN_PERSONS[p]);
-                    this.sidePanel.show();
-                    this.sidePanel.adaptTo(KNOWN_PERSONS[p]);
-                    break;
-                }
+        }
+
+
+        for (let p in KNOWN_PERSONS) {
+            if (matchedPerson === KNOWN_PERSONS[p]) {
+                console.log(`matched ${p}`);
+                this.centerPanel.startTimer();
+                this.debugPanel.hide();
+                this.centerPanel.show();
+                this.centerPanel.adaptTo(KNOWN_PERSONS[p]);
+                this.sidePanel.show();
+                this.sidePanel.adaptTo(KNOWN_PERSONS[p]);
+                break;
             }
         }
     }
 
     dummyAnimation() {
+        this.debugPanel.show();
+        this.debugIsEnabled = true;
         this.sidePanel.hide();
         this.sidePanel.adaptTo(KNOWN_PERSONS.KYLO);
         this.centerPanel.adaptTo(KNOWN_PERSONS.KYLO);
         this.centerPanel.hide();
 
         setTimeout(() => {
-            this.debug.hide();
+            this.debugPanel.hide();
+            this.debugIsEnabled = false;
             this.sidePanel.show();
             this.centerPanel.show();
             this.sidePanel.moveTo(POSITIONS.LEFT);
