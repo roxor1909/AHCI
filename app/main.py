@@ -20,6 +20,10 @@ from image_processing import FaceRecognition
 
 import persistence
 
+import logging
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.WARN)
+
 # Some globals
 labels = None
 interpreter = None
@@ -52,12 +56,12 @@ def stats_route(user):
 
 @socketio.on('connect')
 def on_connect():
-    print('Client connected')
+    log.warning('client connected')
 
 
 @socketio.on('disconnect')
 def on_disconnect():
-    print('Client disconnected')
+    log.warning('client disconnected')
 
 
 @socketio.on('camera_frame')
@@ -76,7 +80,7 @@ def handle_camera_frame_event(json_input, methods=['POST']):
         # use face recognition to identify the person
         matched_person = face_recognition.match_person_in_image(np.array(img))
         if matched_person != None:
-            print("detected " + matched_person, file=sys.stderr)
+            log.warning(f'detected person: {matched_person}"')
 
             # only measure toothbrush duration for the given list of persons
             # TODO: comment in
@@ -102,25 +106,26 @@ def measure_tooth_brush_duration(bounding_boxes, matched_person):
 
     for obj in bounding_boxes:
         if obj['class'] == 'cell phone':
-            print('Smartphone detected', file=sys.stderr)
+            log.warning('detected smartphone')
             _h = obj['bounding_box']['ymax'] - obj['bounding_box']['ymin']
             _w = obj['bounding_box']['xmax'] - obj['bounding_box']['xmin']
 
             now = datetime.datetime.now()
 
             if (_h > _w) and (IS_BRUSHING == False):
-                print('Start toothbrushing', file=sys.stderr)
+                log.warning('started toothbrushing')
                 IS_BRUSHING = True
                 BRUSHING_START = now
             
             if (IS_BRUSHING == True) and ((now - BRUSHING_START).seconds > 5) and (_w > _h):
-                print('Stop toothbrushing', file=sys.stderr)
+                log.warning('stopped toothbrushing')
                 IS_BRUSHING = False
 
                 # calculate duration
                 duration = now - BRUSHING_START
 
                 # write to db
+                log.warning(f'measured a toothbrush duration of {duration.seconds} seconds')
                 connection = persistence.get_connection()
                 persistence.insert_tb_data_for_user(connection, matched_person, now, duration.seconds)
 
@@ -148,19 +153,20 @@ def update_achievements(db_connection, person):
         # if brushed teeth once
         if achievement == 'yoda' and len(tb_durations_for_user) == 1:
             persistence.insert_achievement_for_user(db_connection, person, 'yoda')
+            log.warning(f'granted new achievement "yoda" to user "{person}"')
             break
 
         # if brushed teeth four times
         if achievement == 'chewbacca' and len(tb_durations_for_user) == 4:
             persistence.insert_achievement_for_user(db_connection, person, 'chewbacca')
+            log.warning(f'granted new achievement "achievement" to user "{person}"')
             break
         
         # if brushed teeth longer than 3 minutes
         if achievement == 'trooper' and  max(tb_durations_for_user) > 180:
             persistence.insert_achievement_for_user(db_connection, person, 'trooper')
+            log.warning(f'granted new achievement "trooper" to user "{person}"')
             break
-
-
 
 def try_get_env(name):
     try:
@@ -186,7 +192,7 @@ def load_labels(path):
 
 def set_input_tensor(interpreter, image):
     """Sets the input tensor."""
-    print(interpreter.get_input_details()[0]['index'])
+    #log.warning(interpreter.get_input_details()[0]['index'])
     tensor_index = interpreter.get_input_details()[0]['index']
     input_tensor = interpreter.tensor(tensor_index)()[0]
     input_tensor[:, :] = image
@@ -275,5 +281,5 @@ if __name__ == '__main__':
 
     _, input_height, input_width, _ = interpreter.get_input_details()[0]['shape']
 
-    print('Starting server')
+    log.warning('starting server')
     socketio.run(app, host='0.0.0.0', debug=debug, port=port, use_reloader=use_reloader)
