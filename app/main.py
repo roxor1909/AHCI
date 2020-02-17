@@ -77,6 +77,13 @@ def handle_camera_frame_event(json_input, methods=['POST']):
 
         bounding_boxes = detect_objects(interpreter, img, threshold=0.4)
 
+        # reset if the brushing time exceeds 5 minutes to catch the case
+        # when the termination gesture wasn't properly recognized
+        global IS_BRUSHING
+        if IS_BRUSHING and ((datetime.datetime.now() - BRUSHING_START).seconds > 300):
+            log.warning('something\'s wrong: it looks like the user is brushing his teeth for > 5 minutes -> stop tooth brushing')
+            IS_BRUSHING = False
+
         # use face recognition to identify the person
         matched_person = face_recognition.match_person_in_image(np.array(img))
         if matched_person != None:
@@ -104,13 +111,14 @@ def measure_tooth_brush_duration(bounding_boxes, matched_person):
     global IS_BRUSHING
     global BRUSHING_START
 
+    now = datetime.datetime.now()
+
     for obj in bounding_boxes:
         if obj['class'] == 'cell phone':
             log.warning('detected smartphone')
             _h = obj['bounding_box']['ymax'] - obj['bounding_box']['ymin']
             _w = obj['bounding_box']['xmax'] - obj['bounding_box']['xmin']
 
-            now = datetime.datetime.now()
 
             if (_h > _w) and (IS_BRUSHING == False):
                 log.warning('started toothbrushing')
