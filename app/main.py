@@ -73,27 +73,16 @@ def handle_camera_frame_event(json_input, methods=['POST']):
 
         bounding_boxes = detect_objects(interpreter, img, threshold=0.4)
 
-        # Detect bushing event
-
-        global IS_BRUSHING
-
-        for obj in bounding_boxes:
-            if obj['class'] == 'toothbrush':
-                print('##### Brush detected #####')
-                _h = obj['bounding']['ymax'] - obj['bounding']['ymin']
-                _w = obj['bounding']['xmax'] - obj['bounding']['xmin']
-
-                if _h > _w:
-                    IS_BRUSHING = True
-                    BRUSHING_START = datetime.datetime.now()
-
-                break
- 
-        ############
-
+        # use face recognition to identify the person
         matched_person = face_recognition.match_person_in_image(np.array(img))
         if matched_person != None:
             print("detected " + matched_person, file=sys.stderr)
+
+            # only measure toothbrush duration for the given list of persons
+            # TODO: comment in
+            #if matched_person in [ "kylo", "leia", "rey", "luke", "anakin"]:
+            #    measure_tooth_brush_duration(bounding_boxes, matched_person)
+            measure_tooth_brush_duration(bounding_boxes, matched_person)
 
         json_response = json.dumps({
             'matchedPerson': matched_person,
@@ -101,6 +90,77 @@ def handle_camera_frame_event(json_input, methods=['POST']):
             'boundingBoxes': bounding_boxes
             })
         socketio.emit('response_message', json_response)
+
+def measure_tooth_brush_duration(bounding_boxes, matched_person):
+    """
+    Detects the gestures for starting and stopping the tooth brushing, records
+    the duration and stores it into the database.
+    """
+
+    global IS_BRUSHING
+    global BRUSHING_START
+
+    for obj in bounding_boxes:
+        if obj['class'] == 'cell phone':
+            print('Smartphone detected', file=sys.stderr)
+            _h = obj['bounding_box']['ymax'] - obj['bounding_box']['ymin']
+            _w = obj['bounding_box']['xmax'] - obj['bounding_box']['xmin']
+
+            now = datetime.datetime.now()
+
+            if (_h > _w) and (IS_BRUSHING == False):
+                print('Start toothbrushing', file=sys.stderr)
+                IS_BRUSHING = True
+                BRUSHING_START = now
+            
+            if (IS_BRUSHING == True) and ((now - BRUSHING_START).seconds > 5) and (_w > _h):
+                print('Stop toothbrushing', file=sys.stderr)
+                IS_BRUSHING = False
+
+                # calculate duration
+                duration = now - BRUSHING_START
+
+                # write to db
+                connection = persistence.get_connection()
+                persistence.insert_tb_data_for_user(connection, matched_person, now, duration.seconds)
+
+                # update achievements for user
+                update_achievements(connection, matched_person)
+
+                connection.close()
+            break
+
+
+def update_achievements(db_connection, person):
+    """
+    Retrieves all achievements for the given user, calculates the difference (achievements
+    which the user has not) and applies a set of rules to decide whether the user is eligible
+    for a new achievement. If the user is eligible, then the result is stored into the database.
+    """
+    curr_achievements = [res[0] for res in persistence.get_achievements_for_user(db_connection, person)]
+    things_to_achieve = ['chewbacca', 'yoda', 'trooper']
+
+    tb_durations_for_user = [res[1] for res in persistence.get_tb_data_for_user(db_connection, person)]
+
+    # always just recognize one achievments
+    for achievement in list(set(things_to_achieve) - set(curr_achievements)):
+
+        # if brushed teeth once
+        if achievement == 'yoda' and len(tb_durations_for_user) == 1:
+            persistence.insert_achievement_for_user(db_connection, person, 'yoda')
+            break
+
+        # if brushed teeth four times
+        if achievement == 'chewbacca' and len(tb_durations_for_user) == 4:
+            persistence.insert_achievement_for_user(db_connection, person, 'chewbacca')
+            break
+        
+        # if brushed teeth longer than 3 minutes
+        if achievement == 'trooper' and  max(tb_durations_for_user) > 180:
+            persistence.insert_achievement_for_user(db_connection, person, 'trooper')
+            break
+
+
 
 def try_get_env(name):
     try:
