@@ -67,7 +67,7 @@ class CenterPanel {
         this.timerActive = true;
 
         const diameter = 400;
-        const completedGif = paper.image( `static/images/begin${this.style}.gif`, SCREEN_WIDTH / 2 - diameter / 2, SCREEN_HEIGHT / 2 - diameter / 2, diameter, diameter)
+        const completedGif = paper.image(`static/images/begin${this.style}.gif`, SCREEN_WIDTH / 2 - diameter / 2, SCREEN_HEIGHT / 2 - diameter / 2, diameter, diameter)
         const completedText = paper.text(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 150, 'READY, SET, Go!');
         completedText.attr({ fill: 'white', 'font-size': 50, 'font-family': 'LLPixel', 'text-anchor': 'middle' });
         const group = paper.g(completedGif, completedText);
@@ -123,6 +123,7 @@ class CenterPanel {
         const group = paper.g(completedGif, completedText);
         setTimeout(() => {
             this.timer.attr({ text: '0:00' });
+            this.progressBar.attr({ width: 0 });
             group.animate({
                 opacity: 0.0
             }, 1000, () => { group.remove(); });
