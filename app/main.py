@@ -85,9 +85,9 @@ def handle_camera_frame_event(json_input, methods=['POST']):
 
         for obj in bounding_boxes:
             if obj['class'] == 'cell phone':
-                print('##### Brush detected #####')
-                _h = obj['bounding']['ymax'] - obj['bounding']['ymin']
-                _w = obj['bounding']['xmax'] - obj['bounding']['xmin']
+                print('##### Brush detected #####', obj, file=sys.stderr)
+                _h = obj['bounding_box']['ymax'] - obj['bounding_box']['ymin']
+                _w = obj['bounding_box']['xmax'] - obj['bounding_box']['xmin']
 
                 now = datetime.datetime.now()
 
