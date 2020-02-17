@@ -192,11 +192,10 @@ class DebugPanel {
         this.gif = paper.image('static/images/fingerprintYellow.gif', SCREEN_WIDTH - 870, 80, 230, 150);
 
         this.group = paper.g(this.debugPanel, this.webcam, this.gif);
-
-        this.show();
     }
 
     hide() {
+        this.enabled = false;
         this.group.attr({ visibility: 'hidden' });
         this.boundingBoxCanvas.style.display = 'none';
         this.video.style.display = 'none';
@@ -204,6 +203,7 @@ class DebugPanel {
     }
 
     show() {
+        this.enabled = true;
         this.group.attr({ visibility: '' });
         this.boundingBoxCanvas.style.display = 'block';
         this.video.style.display = 'block';
@@ -211,6 +211,9 @@ class DebugPanel {
     }
 
     displayDebugInfo(json) {
+        if (!this.enabled) {
+            return;
+        }
         this.debugText.innerHTML = JSON.stringify(json, undefined, 2);
 
         const boundingBoxCanvasContext = this.boundingBoxCanvas.getContext('2d');
@@ -442,27 +445,20 @@ class PanelManager {
             this.socket.emit('camera_frame', { framedata: data });
         }, 1000);
 
-        this.socket.on('response_message', (msg) => this.updateUI(msg));
-
-    }
-
-    updateUI(msg) {
-
-        const json = JSON.parse(msg);
-        this.adaptUserInterface(json.matchedPerson, json.isBrushing);
-        if (this.debugIsEnabled) {
+        this.socket.on('response_message', (msg) => {
+            const json = JSON.parse(msg);
+            this.adaptUserInterface(json.matchedPerson, json.isBrushing);
             this.debugPanel.displayDebugInfo(json);
-        }
+            /*if (json.matchedPerson) {
+              matchedPerson = matchedPerson.toLowerCase();
+              }
+              const matchedPersona = assignMatchedPersonToPersona(matchedPerson);
+            */
+        });
 
-        /*        if (json.matchedPerson) {
-                    matchedPerson = matchedPerson.toLowerCase();
-                }
-                const matchedPersona = assignMatchedPersonToPersona(matchedPerson);
-*/
     }
 
     adaptUserInterface(matchedPerson, isBrushing) {
-        this.debugIsEnabled = false;
 
         if (this.lastMatchedPerson === matchedPerson) {
             return;
@@ -482,7 +478,6 @@ class PanelManager {
 
         if (matchedPerson === KNOWN_PERSONS.UNKNOWN) {
             console.log('unknown person -> enable debug');
-            this.debugIsEnabled = true;
             this.debugPanel.show();
             this.centerPanel.hide();
             this.sidePanel.hide();
@@ -493,7 +488,7 @@ class PanelManager {
 
         for (let p in KNOWN_PERSONS) {
             if (matchedPerson === KNOWN_PERSONS[p]) {
-                console.log(`matched ${p}`);
+                console.log(`matched ${p} -> adapt UI`);
                 this.centerPanel.startTimer();
                 this.debugPanel.hide();
                 this.centerPanel.adaptTo(KNOWN_PERSONS[p], POSITIONS.BOTTOM);
@@ -506,14 +501,12 @@ class PanelManager {
 
     dummyAnimation() {
         this.debugPanel.show();
-        this.debugIsEnabled = true;
         this.sidePanel.hide();
         this.centerPanel.hide();
         this.statsPanel.hide();
 
         setTimeout(() => {
             this.debugPanel.hide();
-            this.debugIsEnabled = false;
             this.sidePanel.adaptTo(KNOWN_PERSONS.ANAKIN, POSITIONS.LEFT);
             this.centerPanel.adaptTo(KNOWN_PERSONS.ANAKIN);
             this.centerPanel.startTimer();
