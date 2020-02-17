@@ -13,10 +13,35 @@
     </div>
     <canvas id="recognition-canvas"></canvas>
     <svg id="svg"></svg>
-    <script src="{{ url_for('static', filename='scripts/socket.io.js') }}"></script>
-    <script src="{{ url_for('static', filename='scripts/snap.svg-min.js') }}"></script>
-    <script src="{{ url_for('static', filename='scripts/mirror.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/external/socket.io.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/external/snap.svg-min.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/sidePanel.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/centerPanel.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/statsPanel.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/debugPanel.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/panelManager.js') }}"></script>
     <script>
+        const SCREEN_WIDTH = window.innerWidth;
+        const SCREEN_HEIGHT = window.innerHeight;
+        const CAMERA_WIDTH = 640;
+        const CAMERA_HEIGHT = 480;
+        const ANIMATION_DUR_IN_MILLI = 500;
+        const IDEAL_TOOTHBRUSH_DURATION = 180;
+        const EASING = mina.easeinout;
+        const POSITIONS = Object.freeze({
+            RIGHT: Symbol('right'),
+            LEFT: Symbol('right'),
+            BOTTOM: Symbol('bottom'),
+            TOP: Symbol('top'),
+        });
+        const KNOWN_PERSONS = Object.freeze({
+            ANAKIN: 'anakin',
+            KYLO: 'kylo',
+            LEIA: 'leia',
+            LUKE: 'luke',
+            REY: 'rey',
+            UNKNOWN: 'unknown',
+        });
         const paper = Snap('#svg');
         const panelManager = new PanelManager();
     </script>
