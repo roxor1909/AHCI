@@ -262,15 +262,15 @@ class StatsPanel {
         }
         this.lastMatchedPerson = person;
 
-        this.displayMedals();
         //this.displayNewlyEarnedMedal();
 
         fetch(`/stats/${person}`)
             .then((response) => {
                 return response.json();
             })
-            .then((measures) => {
-                this.displayGraph(measures, colors);
+            .then((stats) => {
+                this.displayGraph(stats.tbh, colors);
+                this.displayMedals(stats.acv);
                 this.moveTo(position);
             });
     }
@@ -380,7 +380,7 @@ class StatsPanel {
         }, 12000);
     }
 
-    displayMedals(chewbacca, trooper, yoda = true) {
+    displayMedals(achievements) {
         if (this.iconGroup) {
             this.iconGroup.remove();
         }
@@ -393,13 +393,13 @@ class StatsPanel {
         const trooperImg = paper.image(`static/images/iconTrooper${this.style}.svg`, SCREEN_WIDTH - 205, 650, diameter, diameter);
         const yodaImg = paper.image(`static/images/iconYoda${this.style}.svg`, SCREEN_WIDTH - 255, 750, 180, diameter);
 
-        if (!chewbacca) {
+        if (!achievements.includes('chewbacca')) {
             chewbaccaImg.attr({ opacity: 0.3 });
         }
-        if (!trooper) {
+        if (!achievements.includes('trooper')) {
             trooperImg.attr({ opacity: 0.3 });
         }
-        if (!yoda) {
+        if (!achievements.includes('yoda')) {
             yodaImg.attr({ opacity: 0.3 });
         }
         this.iconGroup = paper.g(text, chewbaccaImg, trooperImg, yodaImg);

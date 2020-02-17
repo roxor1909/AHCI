@@ -33,7 +33,6 @@ def create_schema_if_not_exists(db_connection):
     query2 = """CREATE TABLE IF NOT EXISTS tb_achievements (
         entry_id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_name TEXT NOT NULL,
-        timestamp DATETIME NOT NULL,
         achievement_name TEXT NOT NULL
     );"""
 
@@ -56,7 +55,7 @@ def get_tb_data_for_user(db_connection, user_name):
 def get_achievements_for_user(db_connection, user_name):
     c = db_connection.cursor()
 
-    query1 = "SELECT achievement_name, timestamp FROM tb_achievements WHERE user_name=?;"
+    query1 = "SELECT achievement_name FROM tb_achievements WHERE user_name=?;"
 
     c.execute(query1, (user_name, ))
     res = c.fetchall()
@@ -73,12 +72,12 @@ def insert_tb_data_for_user(db_connection, user_name, timestamp, duration):
     db_connection.commit()
     c.close()
 
-def insert_achievement_for_user(db_connection, user_name, timestamp, achievement_name):
+def insert_achievement_for_user(db_connection, user_name, achievement_name):
     c = db_connection.cursor()
 
-    query1 = "INSERT INTO tb_achievements VALUES(?, ?, ?, ?)"
+    query1 = "INSERT INTO tb_achievements VALUES(?, ?, ?)"
 
-    c.execute(query1, (None, user_name, timestamp, achievement_name))
+    c.execute(query1, (None, user_name, achievement_name))
 
     db_connection.commit()
     c.close()
@@ -100,3 +99,10 @@ def create_dummy_data(db_connection):
         insert_tb_data_for_user(db_connection, person, two_days_ago, two_days_ago_brush)
         insert_tb_data_for_user(db_connection, person, yesterday, yesterday_brush)
         #insert_tb_data_for_user(db_connection, person, now, todays_brush)
+
+        if (random.randint(0,30) >= 15):
+            insert_achievement_for_user(db_connection, person, 'chewbacca')
+        if (random.randint(0,30) >= 15):
+            insert_achievement_for_user(db_connection, person, 'trooper')
+        if (random.randint(0,30) >= 15):
+            insert_achievement_for_user(db_connection, person, 'yoda')

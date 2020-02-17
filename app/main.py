@@ -45,10 +45,10 @@ def root_route():
 @app.route('/stats/<string:user>')
 def stats_route(user):
     connection = persistence.get_connection()
-    result = persistence.get_tb_data_for_user(connection, user)
+    toothbrush_data = persistence.get_tb_data_for_user(connection, user)
+    achievements = persistence.get_achievements_for_user(connection, user)
     connection.close()
-    y = [res[1] for res in result]
-    return jsonify(y)
+    return jsonify({ 'tbh': [res[1] for res in toothbrush_data], 'acv': [res[0] for res in achievements] })
 
 @socketio.on('connect')
 def on_connect():
