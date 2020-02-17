@@ -100,9 +100,9 @@ def create_dummy_data(db_connection):
         insert_tb_data_for_user(db_connection, person, yesterday, yesterday_brush)
         #insert_tb_data_for_user(db_connection, person, now, todays_brush)
 
-        if (random.randint(0,30) >= 15):
+        if (random.randint(0,30) >= 20):
             insert_achievement_for_user(db_connection, person, 'chewbacca')
-        if (random.randint(0,30) >= 15):
+        if (random.randint(0,30) >= 20):
             insert_achievement_for_user(db_connection, person, 'trooper')
-        if (random.randint(0,30) >= 15):
+        if (random.randint(0,30) >= 20):
             insert_achievement_for_user(db_connection, person, 'yoda')
