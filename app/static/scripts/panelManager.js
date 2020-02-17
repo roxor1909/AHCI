@@ -52,15 +52,12 @@ class PanelManager {
     }
 
     adaptUserInterface(matchedPerson, isBrushing) {
-        if (this.lastIsBrushing !== isBrushing) {
-            this.lastIsBrushing = isBrushing;
-            if (isBrushing) {
-                console.log('start timer for toothbrushing');
-                this.centerPanel.startTimer();
-            } else {
-                console.log('stop timer for toothbrushing');
-                this.centerPanel.stopTimer();
-            }
+        if (isBrushing) {
+            console.log('start timer for toothbrushing');
+            this.centerPanel.startTimer();
+        } else {
+            console.log('stop timer for toothbrushing');
+            this.centerPanel.stopTimer();
         }
 
         // prevent continuous refreshing of UI when person in front of mirror is the same person as last time
