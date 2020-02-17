@@ -421,6 +421,8 @@ class PanelManager {
         this.statsPanel = new StatsPanel();
         this.statsPanel.hide();
         this.socketConnection();
+
+        this.lastIsBrushing = false;
         //this.dummyAnimation();
     }
 
@@ -459,7 +461,18 @@ class PanelManager {
     }
 
     adaptUserInterface(matchedPerson, isBrushing) {
+        if (this.lastIsBrushing !== isBrushing) {
+            this.lastIsBrushing = isBrushing;
+            if (isBrushing) {
+                console.log('start timer for toothbrushing');
+                this.centerPanel.startTimer();
+            } else {
+                console.log('stop timer for toothbrushing');
+                this.centerPanel.stopTimer();
+            }
+        }
 
+        // prevent continuous refreshing of UI when person in front of mirror is the same person as last time
         if (this.lastMatchedPerson === matchedPerson) {
             return;
         }
@@ -489,7 +502,6 @@ class PanelManager {
         for (let p in KNOWN_PERSONS) {
             if (matchedPerson === KNOWN_PERSONS[p]) {
                 console.log(`matched ${p} -> adapt UI`);
-                this.centerPanel.startTimer();
                 this.debugPanel.hide();
                 this.centerPanel.adaptTo(KNOWN_PERSONS[p], POSITIONS.BOTTOM);
                 this.sidePanel.adaptTo(KNOWN_PERSONS[p], POSITIONS.RIGHT);
