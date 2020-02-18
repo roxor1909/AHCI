@@ -34,6 +34,15 @@ class DebugPanel {
         this.debugText.style.display = 'block';
     }
 
+    adaptTo(state, fullJson) {
+        if (state.debugPanelHidden) {
+            this.hide();
+        } else {
+            this.show();
+            this.displayDebugInfo(fullJson);
+        }
+    }
+
     displayDebugInfo(json) {
         if (!this.enabled) {
             return;

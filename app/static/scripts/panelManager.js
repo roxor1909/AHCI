@@ -5,12 +5,13 @@ class PanelManager {
     constructor() {
         this.debugPanel = new DebugPanel();
         this.debugPanel.hide();
-        this.sidePanel = new SidePanel(POSITIONS.RIGHT);
+        this.sidePanel = new SidePanel();
         this.sidePanel.hide();
         this.centerPanel = new CenterPanel();
         this.centerPanel.hide();
         this.statsPanel = new StatsPanel();
         this.statsPanel.hide();
+        this.ruleInterpreter = new RuleInterpreter();
         this.socketConnection();
 
         this.lastIsBrushing = false;
@@ -40,8 +41,14 @@ class PanelManager {
 
         this.socket.on('response_message', (msg) => {
             const json = JSON.parse(msg);
-            this.adaptUserInterface(json.matchedPerson, json.isBrushing);
-            this.debugPanel.displayDebugInfo(json);
+            const state = this.ruleInterpreter.evaluateState(json);
+            console.log(JSON.stringify(state));
+            this.centerPanel.adaptTo(state);
+            this.sidePanel.adaptTo(state);
+            this.statsPanel.adaptTo(state);
+            this.debugPanel.adaptTo(state, json);
+            //this.adaptUserInterface(json.matchedPerson, json.isBrushing);
+            //this.debugPanel.displayDebugInfo(json);
             /*if (json.matchedPerson) {
               matchedPerson = matchedPerson.toLowerCase();
               }

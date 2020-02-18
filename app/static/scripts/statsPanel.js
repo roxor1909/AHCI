@@ -5,49 +5,58 @@ class StatsPanel {
     constructor() {
     }
 
-    /**
-     * 
-     * @param {*} person 
-     * @param {*} position 
-     * @param {boolean} forceUpdate Force to redraw all elements including fetch new data from the server backend.
-     */
-    adaptTo(person, position, forceUpdate = false) {
-        this.accentColor = '#40e5ad';
-        this.style = 'Green';
-
+    adaptTo(state) {
         let colors = ['#26A67B', '#40E5AD', '#83FFD6', '#B4FFE6'];
-        if (person === KNOWN_PERSONS.KYLO) {
+        if (state.currentlyMatchedPerson === KNOWN_PERSONS.KYLO) {
             colors = ['#B50900', '#E4281D', '#EA746D', '#FFC6C3'];
-            this.accentColor = '#e4281d';
-            this.style = 'Red';
         }
 
-        if (this.lastMatchedPerson === person && forceUpdate === false) {
-            this.moveTo(position);
+        if (state.statsPanelHidden) {
+            this.hide();
             return;
         }
-        this.lastMatchedPerson = person;
 
-        fetch(`/stats/${person}`)
+/*        if (!state.matchedPersonChanged && forceUpdate === false && state.statsPanelPositionChanged) {
+            this.moveTo(state.statsPanelCurrentPosition);
+            return;
+        }*/
+
+        console.log('update stats:', state.updateStats);
+
+        if (state.matchedPersonChanged || state.updateStats) {
+
+            fetch(`/stats/${state.currentlyMatchedPerson}`)
             .then((response) => {
                 return response.json();
             })
             .then((stats) => {
 
                 // adapt UI: don't display the graph to children like Anakin
-                if (person === KNOWN_PERSONS.ANAKIN) {
-                    this.graphGroup.remove();
+                if (state.currentlyMatchedPerson === KNOWN_PERSONS.ANAKIN) {
+                    if (this.graphGroup) {
+                        this.graphGroup.remove();
+                    }
                 } else {
                     this.displayGraph(stats.tbh, colors);
                 }
-                this.displayAchievements(stats.acv);
-                this.displayNewlyEarnedAchievements(stats.acv);
-                this.moveTo(position);
+
+                this.displayAchievements(state.style, state.accentColor, stats.acv);
+                
+                if (!state.matchedPersonChanged && state.updateStats) {
+                    this.displayNewlyEarnedAchievements(stats.acv);
+                }
+                
+                if (state.statsPanelPositionChanged) {
+                    this.moveTo(state.statsPanelCurrentPosition);
+                }
+
+                this.previousAchievements = stats.acv;
             });
+
+        }
     }
 
     hide() {
-        this.lastMatchedPerson = undefined;
         if (this.graphGroup) {
             this.graphGroup.remove();
         }
@@ -57,11 +66,6 @@ class StatsPanel {
     }
 
     moveTo(position) {
-        if (this.position === position) {
-            return;
-        }
-        this.position = position;
-
         let distance = 0;
         if (position === POSITIONS.LEFT) {
             distance = -SCREEN_WIDTH + 350;
@@ -123,8 +127,6 @@ class StatsPanel {
         const newAchievements = achievements.filter(m => !this.previousAchievements.includes(m));
         console.log('old achievements:', this.previousAchievements);
         console.log('new achievements:', newAchievements);
-        this.previousAchievements = achievements;
-
         setTimeout(() => {
             newAchievements.forEach(acv => {
                 const capitalizedAcv = acv.charAt(0).toUpperCase() + acv.slice(1);
@@ -144,18 +146,18 @@ class StatsPanel {
         }, 6000);
     }
 
-    displayAchievements(achievements) {
+    displayAchievements(style, accentColor, achievements) {
         if (this.iconGroup) {
             this.iconGroup.remove();
         }
 
         const text = paper.text(SCREEN_WIDTH - 170, 685, 'MEDALS')
-        text.attr({ fill: this.accentColor, 'font-size': 30, 'font-family': 'Starjedi', 'text-anchor': 'middle' });
+        text.attr({ fill: accentColor, 'font-size': 30, 'font-family': 'Starjedi', 'text-anchor': 'middle' });
 
         const diameter = 80;
-        const trooperImg = paper.image(`static/images/iconTrooper${this.style}.svg`, SCREEN_WIDTH - 205, 710, diameter, diameter);
-        const yodaImg = paper.image(`static/images/iconYoda${this.style}.svg`, SCREEN_WIDTH - 255, 820, 180, diameter);
-        const chewbaccaImg = paper.image(`static/images/iconChewbacca${this.style}.svg`, SCREEN_WIDTH - 205, 930, 80, 90);
+        const trooperImg = paper.image(`static/images/iconTrooper${style}.svg`, SCREEN_WIDTH - 205, 710, diameter, diameter);
+        const yodaImg = paper.image(`static/images/iconYoda${style}.svg`, SCREEN_WIDTH - 255, 820, 180, diameter);
+        const chewbaccaImg = paper.image(`static/images/iconChewbacca${style}.svg`, SCREEN_WIDTH - 205, 930, 80, 90);
 
         if (!achievements.includes('chewbacca')) {
             chewbaccaImg.attr({ opacity: 0.3 });

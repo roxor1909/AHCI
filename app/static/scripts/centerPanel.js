@@ -2,9 +2,7 @@
 
 class CenterPanel {
 
-    constructor(position) {
-        this.timerActive = false;
-        this.position = position;
+    constructor() {
         this.height = 160;
         this.width = 400;
 
@@ -12,9 +10,7 @@ class CenterPanel {
         this.panel = paper.image('static/images/centerPanel.svg', SCREEN_WIDTH / 2 - this.width, SCREEN_HEIGHT - this.height, 800, 150);
         this.timer = paper.text(SCREEN_WIDTH / 2 - this.width + 558, SCREEN_HEIGHT - this.height + 80, '0:00');
         this.timer.attr({ fill: 'white', 'text-anchor': 'right', 'font-size': 60, 'font-family': 'LLPIXEL3' });
-        this.progressGif.attr({
-            visibility: 'hidden',
-        });
+        this.progressGif.attr({ visibility: 'hidden' });
         this.progressBar = paper.rect(SCREEN_WIDTH / 2 - this.width + 49, SCREEN_HEIGHT - this.height + 105, 0, 30, 0);
 
         this.group = paper.g(this.progressBar, this.progressGif, this.panel, this.timer);
@@ -24,27 +20,37 @@ class CenterPanel {
         this.group.attr({ visibility: 'hidden' });
     }
 
-    adaptTo(person, position) {
+    adaptTo(state) {
+
+        if (state.centerPanelHidden) {
+            this.group.attr({ visibility: 'hidden' });
+            return;
+        }
         this.group.attr({ visibility: '' });
 
-        if (person === KNOWN_PERSONS.KYLO) {
-            this.progressGif.attr({ 'xlink:href': 'static/images/waveRed.gif' });
-            this.panel.attr({ 'xlink:href': 'static/images/centerPanelRed.svg' });
-            this.style = 'Red';
-            this.color = '#b5060d';
-        } else if (person === KNOWN_PERSONS.REY || person === KNOWN_PERSONS.ANAKIN || person === KNOWN_PERSONS.LEIA || person === KNOWN_PERSONS.LUKE) {
-            this.progressGif.attr({ 'xlink:href': 'static/images/waveGreen.gif' });
-            this.panel.attr({ 'xlink:href': 'static/images/centerPanelGreen.svg' });
-            this.style = 'Green';
-            this.color = '#19bfa9';
-        } else {
-            this.progressGif.attr({ 'xlink:href': 'static/images/wave.gif' });
-            this.panel.attr({ 'xlink:href': 'static/images/centerPanel.svg' });
+        if (state.matchedPersonChanged) {
+            switch (state.currentlyMatchedPerson) {
+                case KNOWN_PERSONS.KYLO:
+                    this.progressGif.attr({ 'xlink:href': 'static/images/waveRed.gif' });
+                    this.panel.attr({ 'xlink:href': 'static/images/centerPanelRed.svg' });
+                    break;
+                case KNOWN_PERSONS.ANAKIN:
+                case KNOWN_PERSONS.LEIA:
+                case KNOWN_PERSONS.LUKE:
+                case KNOWN_PERSONS.REY:
+                    this.progressGif.attr({ 'xlink:href': 'static/images/waveGreen.gif' });
+                    this.panel.attr({ 'xlink:href': 'static/images/centerPanelGreen.svg' });
+                    break;
+                /*                default:
+                                    this.progressGif.attr({ 'xlink:href': 'static/images/wave.gif' });
+                                    this.panel.attr({ 'xlink:href': 'static/images/centerPanel.svg' });
+                                    break;*/
+            }
         }
 
         // adapt UI to senior users
         this.fontSize = 60;
-        if (person === KNOWN_PERSONS.LUKE || person === KNOWN_PERSONS.LEIA) {
+        if (state.currentlyMatchedPerson === KNOWN_PERSONS.LUKE || state.currentlyMatchedPerson === KNOWN_PERSONS.LEIA) {
             this.fontSize = 100;
             this.timer.attr({ 'x': SCREEN_WIDTH / 2 - this.width + 460, 'y': SCREEN_HEIGHT - this.height + 90 });
         } else {
@@ -52,14 +58,20 @@ class CenterPanel {
         }
         this.timer.attr({ 'font-size': this.fontSize });
 
-        this.moveTo(position);
+        if (state.centerPanelPositionChanged) {
+            this.moveTo(state.centerPanelCurrentPosition);
+        }
+
+        if (state.startTimer) {
+            this.startTimer(state.style, state.accentColor);
+        }
+        if (state.stopTimer) {
+            this.stopTimer(state.style);
+        }
+
     }
 
     moveTo(position) {
-        if (this.position === position) {
-            return;
-        }
-
         let distance = 0;
         if (position === POSITIONS.TOP) {
             distance = -SCREEN_HEIGHT + this.height;
@@ -70,15 +82,10 @@ class CenterPanel {
         }, ANIMATION_DUR_IN_MILLI, EASING);
     }
 
-    startTimer() {
-        if (this.timerActive) {
-            return;
-        }
-        this.timerActive = true;
-
+    startTimer(style, color) {
         // display GIF with text to indicate start of tooth brushing
         const diameter = 400;
-        const completedGif = paper.image(`static/images/begin${this.style}.gif`, SCREEN_WIDTH / 2 - diameter / 2, SCREEN_HEIGHT / 2 - diameter / 2, diameter, diameter)
+        const completedGif = paper.image(`static/images/begin${style}.gif`, SCREEN_WIDTH / 2 - diameter / 2, SCREEN_HEIGHT / 2 - diameter / 2, diameter, diameter)
         const completedText = paper.text(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 150, 'READY, SET, GO!');
         completedText.attr({ fill: 'white', 'font-size': 50, 'font-family': 'LLPixel', 'text-anchor': 'middle' });
         const group = paper.g(completedGif, completedText);
@@ -109,18 +116,14 @@ class CenterPanel {
             const progressBarWidth = 442 * progress;
             this.progressBar.attr({
                 width: progressBarWidth,
-                fill: this.color,
+                fill: color,
             });
         };
         timer();
         this.timerUpdate = setInterval(timer, 1000);
     }
 
-    stopTimer() {
-        if (!this.timerActive) {
-            return;
-        }
-        this.timerActive = false;
+    stopTimer(style) {
 
         this.progressGif.attr({
             visibility: 'hidden',
@@ -129,7 +132,7 @@ class CenterPanel {
 
         // display GIF with text to indicate stop of tooth brushing
         const diameter = 400;
-        const completedGif = paper.image(`static/images/end${this.style}.gif`, SCREEN_WIDTH / 2 - diameter / 2, SCREEN_HEIGHT / 2 - diameter / 2, diameter, diameter)
+        const completedGif = paper.image(`static/images/end${style}.gif`, SCREEN_WIDTH / 2 - diameter / 2, SCREEN_HEIGHT / 2 - diameter / 2, diameter, diameter)
         const completedText = paper.text(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 150, 'COMPLETED');
         completedText.attr({ fill: 'white', 'font-size': 50, 'font-family': 'LLPixel', 'text-anchor': 'middle' });
         const group = paper.g(completedGif, completedText);

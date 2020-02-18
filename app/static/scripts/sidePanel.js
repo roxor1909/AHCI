@@ -2,18 +2,14 @@
 
 class SidePanel {
 
-    constructor(position, username = '') {
-        this.position = position;
+    constructor() {
         this.width = 350;
 
-        let horizontalOffset = 0;
-        if (position === POSITIONS.RIGHT) {
-            horizontalOffset = SCREEN_WIDTH - this.width;
-        }
+        let horizontalOffset = SCREEN_WIDTH - this.width;
 
         this.gif = paper.image('static/images/deathStarWhite.gif', 80 + horizontalOffset, 190, 200, 200);
         this.panel = paper.image('static/images/sidePanel.svg', 20 + horizontalOffset, 10, 320, SCREEN_HEIGHT - 20);
-        this.text = paper.text(180 + horizontalOffset, 80, username)
+        this.text = paper.text(180 + horizontalOffset, 80, '');
         this.text.attr({ fill: 'black', 'font-size': 50, 'font-family': 'Starjedi', 'text-anchor': 'middle' });
 
         this.group = paper.g(this.gif, this.panel, this.text);
@@ -23,13 +19,19 @@ class SidePanel {
         this.group.attr({ visibility: 'hidden' });
     }
 
-    adaptTo(person, position) {
+    adaptTo(state) {
+
+        if(state.sidePanelHidden) {
+            this.hide();
+            return;
+        }
+
         this.group.attr({ visibility: '' });
 
-        if (person === KNOWN_PERSONS.KYLO) {
+        if (state.currentlyMatchedPerson === KNOWN_PERSONS.KYLO) {
             this.gif.attr({ 'xlink:href': 'static/images/deathStarRed.gif' });
             this.panel.attr({ 'xlink:href': 'static/images/sidePanelRed.svg' });
-        } else if (person === KNOWN_PERSONS.REY || person === KNOWN_PERSONS.ANAKIN || person === KNOWN_PERSONS.LEIA || person === KNOWN_PERSONS.LUKE) {
+        } else if (state.currentlyMatchedPerson === KNOWN_PERSONS.REY || state.currentlyMatchedPerson === KNOWN_PERSONS.ANAKIN || state.currentlyMatchedPerson === KNOWN_PERSONS.LEIA || state.currentlyMatchedPerson === KNOWN_PERSONS.LUKE) {
             this.gif.attr({ 'xlink:href': 'static/images/deathStarGreen.gif' });
             this.panel.attr({ 'xlink:href': 'static/images/sidePanelGreen.svg' });
         } else {
@@ -40,21 +42,18 @@ class SidePanel {
         // adapt UI to senior users
         this.fontSize = 50;
         this.textPositionY = 80;
-        if (person === KNOWN_PERSONS.LUKE || person === KNOWN_PERSONS.LEIA) {
+        if (state.currentlyMatchedPerson === KNOWN_PERSONS.LUKE || state.currentlyMatchedPerson === KNOWN_PERSONS.LEIA) {
             this.fontSize = 90;
             this.textPositionY = 102;
         }
-        this.text.attr({ text: person.toString().toLowerCase(), 'font-size': this.fontSize, y: this.textPositionY });
+        this.text.attr({ text: state.currentlyMatchedPerson.toString().toLowerCase(), 'font-size': this.fontSize, y: this.textPositionY });
 
-        this.moveTo(position);
+        if (state.sidePanelPositionChanged) {
+            this.moveTo(state.sidePanelCurrentPosition);
+        }
     }
 
     moveTo(position) {
-        if (this.position === position) {
-            return;
-        }
-        this.position = position;
-
         let distance = 0;
         if (position === POSITIONS.LEFT) {
             distance = -SCREEN_WIDTH + this.width;
