@@ -37,7 +37,14 @@ class SidePanel {
             this.panel.attr({ 'xlink:href': 'static/images/sidePanel.svg' });
         }
 
-        this.text.attr({ text: person.toString().toLowerCase() });
+        // adapt UI to senior users
+        this.fontSize = 50;
+        this.textPositionY = 80;
+        if (person === KNOWN_PERSONS.LUKE || person === KNOWN_PERSONS.LEIA) {
+            this.fontSize = 90;
+            this.textPositionY = 102;
+        }
+        this.text.attr({ text: person.toString().toLowerCase(), 'font-size': this.fontSize, y: this.textPositionY });
 
         this.moveTo(position);
     }
