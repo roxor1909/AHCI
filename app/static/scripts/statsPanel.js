@@ -81,14 +81,21 @@ class StatsPanel {
         const elements = [];
         const times = ['3d ago', '2d ago', '1d ago', 'today'];
 
+        const potential_diff = times.length - measures.length;
+        if (potential_diff) {
+            for (let i = 0; i < potential_diff; i++) {
+                measures.unshift(0);                
+            }
+        }
+
         times.forEach((time, i) => {
 
             // if no measurement present for that day, then use default value
             const measure = measures.length > i ? measures[i] : 0;
-            const barHeight = 33;
+            const barHeight = 35;
             const barWidth = Math.pow(measure, 1.5) / Math.pow(Math.max(...measures), 1.5) * 100;
             const x = SCREEN_WIDTH - 180;
-            const y = 400 + barHeight * i * 1.4;
+            const y = 440 + barHeight * i * 1.4;
 
             const bar = paper.rect(x, y, 50, 50, 5).attr({
                 fill: colors[i],
@@ -136,13 +143,13 @@ class StatsPanel {
             this.iconGroup.remove();
         }
 
-        const text = paper.text(SCREEN_WIDTH - 170, 615, 'MEDALS')
+        const text = paper.text(SCREEN_WIDTH - 170, 685, 'MEDALS')
         text.attr({ fill: this.accentColor, 'font-size': 30, 'font-family': 'Starjedi', 'text-anchor': 'middle' });
 
         const diameter = 80;
-        const chewbaccaImg = paper.image(`static/images/iconChewbacca${this.style}.svg`, SCREEN_WIDTH - 205, 850, 80, 90);
-        const trooperImg = paper.image(`static/images/iconTrooper${this.style}.svg`, SCREEN_WIDTH - 205, 650, diameter, diameter);
-        const yodaImg = paper.image(`static/images/iconYoda${this.style}.svg`, SCREEN_WIDTH - 255, 750, 180, diameter);
+        const trooperImg = paper.image(`static/images/iconTrooper${this.style}.svg`, SCREEN_WIDTH - 205, 710, diameter, diameter);
+        const yodaImg = paper.image(`static/images/iconYoda${this.style}.svg`, SCREEN_WIDTH - 255, 820, 180, diameter);
+        const chewbaccaImg = paper.image(`static/images/iconChewbacca${this.style}.svg`, SCREEN_WIDTH - 205, 930, 80, 90);
 
         if (!achievements.includes('chewbacca')) {
             chewbaccaImg.attr({ opacity: 0.3 });

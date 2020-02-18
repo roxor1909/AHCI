@@ -11,7 +11,7 @@ class SidePanel {
             horizontalOffset = SCREEN_WIDTH - this.width;
         }
 
-        this.gif = paper.image('static/images/deathStarWhite.gif', 80 + horizontalOffset, 160, 200, 200);
+        this.gif = paper.image('static/images/deathStarWhite.gif', 80 + horizontalOffset, 190, 200, 200);
         this.panel = paper.image('static/images/sidePanel.svg', 20 + horizontalOffset, 10, 320, SCREEN_HEIGHT - 20);
         this.text = paper.text(180 + horizontalOffset, 80, username)
         this.text.attr({ fill: 'black', 'font-size': 50, 'font-family': 'Starjedi', 'text-anchor': 'middle' });
