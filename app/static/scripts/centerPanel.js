@@ -69,7 +69,7 @@ class CenterPanel {
         // display GIF with text to indicate start of tooth brushing
         const diameter = 400;
         const completedGif = paper.image(`static/images/begin${this.style}.gif`, SCREEN_WIDTH / 2 - diameter / 2, SCREEN_HEIGHT / 2 - diameter / 2, diameter, diameter)
-        const completedText = paper.text(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 150, 'READY, SET, Go!');
+        const completedText = paper.text(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 150, 'READY, SET, GO!');
         completedText.attr({ fill: 'white', 'font-size': 50, 'font-family': 'LLPixel', 'text-anchor': 'middle' });
         const group = paper.g(completedGif, completedText);
         setTimeout(() => {
