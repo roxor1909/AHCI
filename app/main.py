@@ -31,6 +31,7 @@ face_recognition = None
 
 IS_BRUSHING = False
 BRUSHING_START = datetime.datetime.now()
+BRUSHING_END = datetime.datetime.now()
 
 input_height = 0
 input_width = 0
@@ -80,20 +81,24 @@ def handle_camera_frame_event(json_input, methods=['POST']):
         # reset if the brushing time exceeds 5 minutes to catch the case
         # when the termination gesture wasn't properly recognized
         global IS_BRUSHING
-        if IS_BRUSHING and ((datetime.datetime.now() - BRUSHING_START).seconds > 300):
+        now = datetime.datetime.now()
+        log.warning(f'is brushing: {IS_BRUSHING}')
+        if IS_BRUSHING and ((now - BRUSHING_START).seconds > 300):
             log.warning('something\'s wrong: it looks like the user is brushing his teeth for > 5 minutes -> stop tooth brushing')
             IS_BRUSHING = False
 
         # use face recognition to identify the person
         matched_person = face_recognition.match_person_in_image(np.array(img))
         if matched_person != None:
-            log.warning(f'detected person: {matched_person}"')
+            log.warning(f'detected person: {matched_person}')
 
-            # only measure toothbrush duration for the given list of persons
-            # TODO: comment in
-            #if matched_person in [ "kylo", "leia", "rey", "luke", "anakin"]:
-            #    measure_tooth_brush_duration(bounding_boxes, matched_person)
-            measure_tooth_brush_duration(bounding_boxes, matched_person)
+            # prevent restarting tooth brushing immediately after finishing it
+            if (now - BRUSHING_END).seconds > 10:
+                # only measure toothbrush duration for the given list of persons
+                # TODO: comment in
+                #if matched_person in [ "kylo", "leia", "rey", "luke", "anakin"]:
+                #    measure_tooth_brush_duration(bounding_boxes, matched_person)
+                measure_tooth_brush_duration(bounding_boxes, matched_person)
 
         json_response = json.dumps({
             'matchedPerson': matched_person,
@@ -110,6 +115,7 @@ def measure_tooth_brush_duration(bounding_boxes, matched_person):
 
     global IS_BRUSHING
     global BRUSHING_START
+    global BRUSHING_END
 
     now = datetime.datetime.now()
 
@@ -128,6 +134,7 @@ def measure_tooth_brush_duration(bounding_boxes, matched_person):
             if (IS_BRUSHING == True) and ((now - BRUSHING_START).seconds > 5) and (_w > _h):
                 log.warning('stopped toothbrushing')
                 IS_BRUSHING = False
+                BRUSHING_END = now
 
                 # calculate duration
                 duration = now - BRUSHING_START
