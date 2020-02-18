@@ -23,7 +23,7 @@ class CenterPanel {
     adaptTo(state) {
 
         if (state.centerPanelHidden) {
-            this.group.attr({ visibility: 'hidden' });
+            this.hide();
             return;
         }
         this.group.attr({ visibility: '' });
@@ -41,10 +41,6 @@ class CenterPanel {
                     this.progressGif.attr({ 'xlink:href': 'static/images/waveGreen.gif' });
                     this.panel.attr({ 'xlink:href': 'static/images/centerPanelGreen.svg' });
                     break;
-                /*                default:
-                                    this.progressGif.attr({ 'xlink:href': 'static/images/wave.gif' });
-                                    this.panel.attr({ 'xlink:href': 'static/images/centerPanel.svg' });
-                                    break;*/
             }
         }
 
@@ -87,7 +83,7 @@ class CenterPanel {
         const diameter = 400;
         const completedGif = paper.image(`static/images/begin${style}.gif`, SCREEN_WIDTH / 2 - diameter / 2, SCREEN_HEIGHT / 2 - diameter / 2, diameter, diameter)
         const completedText = paper.text(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 150, 'READY, SET, GO!');
-        completedText.attr({ fill: 'white', 'font-size': 50, 'font-family': 'LLPixel', 'text-anchor': 'middle' });
+        completedText.attr({ fill: 'white', 'font-size': 50, 'font-family': 'LLPIXEL3', 'text-anchor': 'middle' });
         const group = paper.g(completedGif, completedText);
         setTimeout(() => {
             this.timer.attr({ text: '0:00' });
@@ -134,7 +130,7 @@ class CenterPanel {
         const diameter = 400;
         const completedGif = paper.image(`static/images/end${style}.gif`, SCREEN_WIDTH / 2 - diameter / 2, SCREEN_HEIGHT / 2 - diameter / 2, diameter, diameter)
         const completedText = paper.text(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 150, 'COMPLETED');
-        completedText.attr({ fill: 'white', 'font-size': 50, 'font-family': 'LLPixel', 'text-anchor': 'middle' });
+        completedText.attr({ fill: 'white', 'font-size': 50, 'font-family': 'LLPIXEL3', 'text-anchor': 'middle' });
         const group = paper.g(completedGif, completedText);
         setTimeout(() => {
             this.timer.attr({ text: '0:00' });

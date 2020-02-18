@@ -51,6 +51,7 @@ class RuleInterpreter {
         this.setIsBrushing(json);
         this.setStartStopTimer(json);
         this.setPanelsHiddenOrVisible();
+        this.setPanelPositions(json);
         return this.state;
     }
 
@@ -119,8 +120,13 @@ class RuleInterpreter {
             this.state.centerPanelHidden = false;
             this.state.sidePanelHidden = false;
             this.state.statsPanelHidden = false;
-    
         }
+    }
+
+    setPanelPositions() {
+        this.state.centerPanelPositionChanged = false;
+        this.state.sidePanelPositionChanged = false;
+        this.state.statsPanelPositionChanged = false;
     }
 
 }

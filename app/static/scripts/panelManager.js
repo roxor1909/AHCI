@@ -41,75 +41,16 @@ class PanelManager {
 
         this.socket.on('response_message', (msg) => {
             const json = JSON.parse(msg);
+            
             const state = this.ruleInterpreter.evaluateState(json);
             console.log(JSON.stringify(state));
+
             this.centerPanel.adaptTo(state);
             this.sidePanel.adaptTo(state);
             this.statsPanel.adaptTo(state);
             this.debugPanel.adaptTo(state, json);
-            //this.adaptUserInterface(json.matchedPerson, json.isBrushing);
-            //this.debugPanel.displayDebugInfo(json);
-            /*if (json.matchedPerson) {
-              matchedPerson = matchedPerson.toLowerCase();
-              }
-              const matchedPersona = assignMatchedPersonToPersona(matchedPerson);
-            */
         });
 
-    }
-
-    adaptUserInterface(matchedPerson, isBrushing) {
-        if (isBrushing) {
-            console.log('start timer for toothbrushing');
-            this.centerPanel.startTimer();
-        } else {
-            console.log('stop timer for toothbrushing');
-            this.centerPanel.stopTimer();
-            // this condition evaluates to true when a user completed tooth brushing
-            // (isBrushing was previously true and is now false)
-            if (this.previousIsBrushing === true) {
-                this.statsPanel.adaptTo(matchedPerson, POSITIONS.RIGHT, true);
-            }
-        }
-        this.previousIsBrushing = isBrushing;
-
-        // prevent continuous refreshing of UI when person in front of mirror is the same person as last time
-        if (this.lastMatchedPerson === matchedPerson) {
-            return;
-        }
-
-        this.lastMatchedPerson = matchedPerson;
-        this.centerPanel.stopTimer();
-
-        if (matchedPerson === null || matchedPerson === undefined) {
-            console.log('no person -> blank screen');
-            this.debugPanel.hide();
-            this.centerPanel.hide();
-            this.sidePanel.hide();
-            this.statsPanel.hide();
-            return;
-        }
-
-        if (matchedPerson === KNOWN_PERSONS.UNKNOWN) {
-            console.log('unknown person -> enable debug');
-            this.debugPanel.show();
-            this.centerPanel.hide();
-            this.sidePanel.hide();
-            this.statsPanel.hide();
-            return;
-        }
-
-
-        for (let p in KNOWN_PERSONS) {
-            if (matchedPerson === KNOWN_PERSONS[p]) {
-                console.log(`matched ${p} -> adapt UI`);
-                this.debugPanel.hide();
-                this.centerPanel.adaptTo(KNOWN_PERSONS[p], POSITIONS.BOTTOM);
-                this.sidePanel.adaptTo(KNOWN_PERSONS[p], POSITIONS.RIGHT);
-                this.statsPanel.adaptTo(KNOWN_PERSONS[p], POSITIONS.RIGHT);
-                break;
-            }
-        }
     }
 
     dummyAnimation() {

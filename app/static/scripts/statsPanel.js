@@ -16,12 +16,9 @@ class StatsPanel {
             return;
         }
 
-/*        if (!state.matchedPersonChanged && forceUpdate === false && state.statsPanelPositionChanged) {
+        if (state.statsPanelPositionChanged) {
             this.moveTo(state.statsPanelCurrentPosition);
-            return;
-        }*/
-
-        console.log('update stats:', state.updateStats);
+        }
 
         if (state.matchedPersonChanged || state.updateStats) {
 
@@ -46,10 +43,6 @@ class StatsPanel {
                     this.displayNewlyEarnedAchievements(stats.acv);
                 }
                 
-                if (state.statsPanelPositionChanged) {
-                    this.moveTo(state.statsPanelCurrentPosition);
-                }
-
                 this.previousAchievements = stats.acv;
             });
 
@@ -125,8 +118,6 @@ class StatsPanel {
 
     displayNewlyEarnedAchievements(achievements) {
         const newAchievements = achievements.filter(m => !this.previousAchievements.includes(m));
-        console.log('old achievements:', this.previousAchievements);
-        console.log('new achievements:', newAchievements);
         setTimeout(() => {
             newAchievements.forEach(acv => {
                 const capitalizedAcv = acv.charAt(0).toUpperCase() + acv.slice(1);
