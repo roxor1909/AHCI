@@ -174,7 +174,7 @@ def update_achievements(db_connection, person):
         # if brushed teeth four times
         if achievement == 'chewbacca' and len(tb_durations_for_user) == 4:
             persistence.insert_achievement_for_user(db_connection, person, 'chewbacca')
-            log.warning(f'granted new achievement "achievement" to user "{person}"')
+            log.warning(f'granted new achievement "chewbacca" to user "{person}"')
             break
         
         # if brushed teeth longer than 3 minutes
