@@ -11,7 +11,7 @@ class DebugPanel {
         this.boundingBoxCanvas.height = CAMERA_HEIGHT;
         this.debugText = document.querySelector('#debug-text pre')
 
-        this.debugPanel = paper.image('static/images/debugPanel.svg', SCREEN_WIDTH - 400, 310, 400, 800);
+        this.debugPanel = paper.image('static/images/debugPanel.svg', SCREEN_WIDTH - 400, 310, 400, 1000);
         this.webcam = paper.image('static/images/webcamPanel.svg', SCREEN_WIDTH - 1000, 10, 1000, 300);
         this.gif = paper.image('static/images/fingerprintYellow.gif', SCREEN_WIDTH - 870, 80, 230, 150);
 
