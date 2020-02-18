@@ -28,15 +28,14 @@ class StatsPanel {
         }
         this.lastMatchedPerson = person;
 
-        //this.displayNewlyEarnedMedal();
-
         fetch(`/stats/${person}`)
             .then((response) => {
                 return response.json();
             })
             .then((stats) => {
                 this.displayGraph(stats.tbh, colors);
-                this.displayMedals(stats.acv);
+                this.displayAchievements(stats.acv);
+                this.displayNewlyEarnedAchievements(stats.acv);
                 this.moveTo(position);
             });
     }
@@ -87,7 +86,7 @@ class StatsPanel {
             // if no measurement present for that day, then use default value
             const measure = measures.length > i ? measures[i] : 0;
             const barHeight = 33;
-            const barWidth = Math.pow(measure, 2) / Math.pow(Math.max(...measures), 2) * 100;
+            const barWidth = Math.pow(measure, 1.5) / Math.pow(Math.max(...measures), 1.5) * 100;
             const x = SCREEN_WIDTH - 180;
             const y = 400 + barHeight * i * 1.4;
 
@@ -107,48 +106,32 @@ class StatsPanel {
         this.graphGroup = paper.group(...elements);
     }
 
-    displayNewlyEarnedMedal() {
-        let diameter = 500;
-        let trophy = paper.image('static/images/achievementYoda.svg', SCREEN_WIDTH / 2 - diameter / 2, SCREEN_HEIGHT / 2 - diameter / 2, 100, 100);
-        trophy.animate({
-            width: diameter,
-            height: diameter,
-        }, 1100, mina.elastic);
+    displayNewlyEarnedAchievements(achievements) {
+        const newAchievements = achievements.filter(m => !this.previousAchievements.includes(m));
+        console.log('old achievements:', this.previousAchievements);
+        console.log('new achievements:', newAchievements);
+        this.previousAchievements = achievements;
+
         setTimeout(() => {
-            trophy.animate({
-                width: 0,
-                height: 0,
-            }, 300, mina.easein);
-        }, 5000);
-        setTimeout(() => {
-            trophy = paper.image('static/images/achievementTrooper.svg', SCREEN_WIDTH / 2 - diameter / 2, SCREEN_HEIGHT / 2 - diameter / 2, 100, 100);
-            trophy.animate({
-                width: diameter,
-                height: diameter,
-            }, 1100, mina.elastic);
-            setTimeout(() => {
-                trophy.animate({
-                    width: 0,
-                    height: 0,
-                }, 300, mina.easein);
-            }, 5000);
+            newAchievements.forEach(acv => {
+                const capitalizedAcv = acv.charAt(0).toUpperCase() + acv.slice(1);
+                let diameter = 500;
+                let medal = paper.image(`static/images/achievement${capitalizedAcv}.svg`, SCREEN_WIDTH / 2 - diameter / 2, SCREEN_HEIGHT / 2 - diameter / 2, 100, 100);
+                medal.animate({
+                    width: diameter,
+                    height: diameter,
+                }, 1100, mina.elastic);
+                setTimeout(() => {
+                    medal.animate({
+                        width: 0,
+                        height: 0,
+                    }, 300, mina.easein);
+                }, 5000);
+            });
         }, 6000);
-        setTimeout(() => {
-            trophy = paper.image('static/images/achievementChewbacca.svg', SCREEN_WIDTH / 2 - diameter / 2, SCREEN_HEIGHT / 2 - diameter / 2, 100, 100);
-            trophy.animate({
-                width: diameter,
-                height: diameter,
-            }, 1100, mina.elastic);
-            setTimeout(() => {
-                trophy.animate({
-                    width: 0,
-                    height: 0,
-                }, 300, mina.easein);
-            }, 5000);
-        }, 12000);
     }
 
-    displayMedals(achievements) {
+    displayAchievements(achievements) {
         if (this.iconGroup) {
             this.iconGroup.remove();
         }
