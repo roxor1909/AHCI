@@ -33,7 +33,13 @@ class StatsPanel {
                 return response.json();
             })
             .then((stats) => {
-                this.displayGraph(stats.tbh, colors);
+
+                // adapt UI: don't display the graph to children like Anakin
+                if (person === KNOWN_PERSONS.ANAKIN) {
+                    this.graphGroup.remove();
+                } else {
+                    this.displayGraph(stats.tbh, colors);
+                }
                 this.displayAchievements(stats.acv);
                 this.displayNewlyEarnedAchievements(stats.acv);
                 this.moveTo(position);
@@ -84,7 +90,7 @@ class StatsPanel {
         const potential_diff = times.length - measures.length;
         if (potential_diff) {
             for (let i = 0; i < potential_diff; i++) {
-                measures.unshift(0);                
+                measures.unshift(0);
             }
         }
 
