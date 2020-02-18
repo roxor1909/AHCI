@@ -58,7 +58,13 @@ class PanelManager {
         } else {
             console.log('stop timer for toothbrushing');
             this.centerPanel.stopTimer();
+            // this condition evaluates to true when a user completed tooth brushing
+            // (isBrushing was previously true and is now false)
+            if (this.previousIsBrushing === true) {
+                this.statsPanel.adaptTo(matchedPerson, POSITIONS.RIGHT, true);
+            }
         }
+        this.previousIsBrushing = isBrushing;
 
         // prevent continuous refreshing of UI when person in front of mirror is the same person as last time
         if (this.lastMatchedPerson === matchedPerson) {

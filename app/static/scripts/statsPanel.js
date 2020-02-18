@@ -62,9 +62,11 @@ class StatsPanel {
             distance = -SCREEN_WIDTH + 350;
         }
 
-        this.graphGroup.animate({
-            transform: `t${distance},0`,
-        }, ANIMATION_DUR_IN_MILLI, EASING);
+        if (this.graphGroup) {
+            this.graphGroup.animate({
+                transform: `t${distance},0`,
+            }, ANIMATION_DUR_IN_MILLI, EASING);
+        }
         if (this.iconGroup) {
             this.iconGroup.animate({
                 transform: `t${distance},0`,
@@ -85,7 +87,7 @@ class StatsPanel {
             // if no measurement present for that day, then use default value
             const measure = measures.length > i ? measures[i] : 0;
             const barHeight = 33;
-            const barWidth = Math.pow(measure, 5) / Math.pow(Math.max(...measures), 5) * 100;
+            const barWidth = Math.pow(measure, 2) / Math.pow(Math.max(...measures), 2) * 100;
             const x = SCREEN_WIDTH - 180;
             const y = 400 + barHeight * i * 1.4;
 
