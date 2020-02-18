@@ -45,7 +45,7 @@ def create_schema_if_not_exists(db_connection):
 def get_tb_data_for_user(db_connection, user_name):
     c = db_connection.cursor()
 
-    query1 = "SELECT timestamp, duration FROM tb_data WHERE user_name=? ORDER BY timestamp ASC;"
+    query1 = "SELECT * FROM (SELECT timestamp, duration FROM tb_data WHERE user_name=? ORDER BY timestamp DESC LIMIT 4) ORDER BY timestamp ASC;"
 
     c.execute(query1, (user_name, ))
     res = c.fetchall()
