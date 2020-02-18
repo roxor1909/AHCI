@@ -42,6 +42,16 @@ class CenterPanel {
             this.panel.attr({ 'xlink:href': 'static/images/centerPanel.svg' });
         }
 
+        // adapt UI to senior users
+        this.fontSize = 60;
+        if (person === KNOWN_PERSONS.LUKE || person === KNOWN_PERSONS.LEIA) {
+            this.fontSize = 80;
+            this.timer.attr({ 'x': SCREEN_WIDTH / 2 - this.width + 515, 'y': SCREEN_HEIGHT - this.height + 85 });
+        } else {
+            this.timer.attr({ 'x': SCREEN_WIDTH / 2 - this.width + 558, 'y': SCREEN_HEIGHT - this.height + 80 });
+        }
+        this.timer.attr({ 'font-size': this.fontSize });
+
         this.moveTo(position);
     }
 
@@ -70,7 +80,7 @@ class CenterPanel {
         const diameter = 400;
         const completedGif = paper.image(`static/images/begin${this.style}.gif`, SCREEN_WIDTH / 2 - diameter / 2, SCREEN_HEIGHT / 2 - diameter / 2, diameter, diameter)
         const completedText = paper.text(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 150, 'READY, SET, GO!');
-        completedText.attr({ fill: 'white', 'font-size': 50, 'font-family': 'LLPixel', 'text-anchor': 'middle' });
+        completedText.attr({ fill: 'white', 'font-size': this.fontSize, 'font-family': 'LLPixel', 'text-anchor': 'middle' });
         const group = paper.g(completedGif, completedText);
         setTimeout(() => {
             this.timer.attr({ text: '0:00' });
@@ -121,7 +131,7 @@ class CenterPanel {
         const diameter = 400;
         const completedGif = paper.image(`static/images/end${this.style}.gif`, SCREEN_WIDTH / 2 - diameter / 2, SCREEN_HEIGHT / 2 - diameter / 2, diameter, diameter)
         const completedText = paper.text(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 150, 'COMPLETED');
-        completedText.attr({ fill: 'white', 'font-size': 50, 'font-family': 'LLPixel', 'text-anchor': 'middle' });
+        completedText.attr({ fill: 'white', 'font-size': this.fontSize, 'font-family': 'LLPixel', 'text-anchor': 'middle' });
         const group = paper.g(completedGif, completedText);
         setTimeout(() => {
             this.timer.attr({ text: '0:00' });
