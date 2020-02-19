@@ -134,19 +134,16 @@ class RuleInterpreter {
         this.state.sidePanelPositionChanged = false;
         this.state.statsPanelPositionChanged = false;
 
-        if (json.boundingBoxes.length == 0) {
+        if (this.state.currentlyMatchedPersonIsUnkown || this.state.currentlyNoMatchedPerson) {
             return;
         }
 
         const box = json.matchedPerson.boundingBox;
-        if (!box) {
-            return;
-        }
-
         const centerBox = (box.left + box.right) / 2;
         const newPosition = (centerBox < (300 * 0.4)) ? POSITIONS.LEFT : POSITIONS.RIGHT;
         const now = Date.now();
 
+        // wait at minimum 5 seconds between moving panels to prevent constant movement
         if (now - this.state.positionChangedLastTime > 5000) {
             if (this.state.sidePanelCurrentPosition !== newPosition) {
                 this.state.sidePanelPositionChanged = true;
