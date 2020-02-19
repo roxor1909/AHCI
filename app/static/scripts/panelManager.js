@@ -43,8 +43,6 @@ class PanelManager {
             const json = JSON.parse(msg);
             
             const state = this.ruleInterpreter.evaluateState(json);
-            console.log(JSON.stringify(state));
-
             this.centerPanel.adaptTo(state);
             this.sidePanel.adaptTo(state);
             this.statsPanel.adaptTo(state);
