@@ -16,36 +16,48 @@ class StatsPanel {
             return;
         }
 
-        if (state.statsPanelPositionChanged) {
-            this.moveTo(state.statsPanelCurrentPosition);
-        }
-
         if (state.matchedPersonChanged || state.updateStats) {
 
             fetch(`/stats/${state.currentlyMatchedPerson}`)
-            .then((response) => {
-                return response.json();
-            })
-            .then((stats) => {
+                .then((response) => {
+                    return response.json();
+                })
+                .then((stats) => {
 
-                // adapt UI: don't display the graph to children like Anakin
-                if (state.currentlyMatchedPerson === KNOWN_PERSONS.ANAKIN) {
-                    if (this.graphGroup) {
-                        this.graphGroup.remove();
+                    // I have spent hours of hours on this until I found this solution. I don't understand why it happens,
+                    // but in these 2 situations the panels must spawn at its original position (=on the right side).
+                    let errorCase1 = false;
+                    let errorCase2 = false;
+                    if (state.statsPanelPositionChanged && state.matchedPersonChanged) {
+                        errorCase1 = true;
+                        if (state.updateStats && state.statsPanelPreviousPosition === POSITIONS.LEFT) {
+                            errorCase2 = true;
+                        }
                     }
-                } else {
-                    this.displayGraph(stats.tbh, colors);
-                }
 
-                this.displayAchievements(state.style, state.accentColor, stats.acv);
-                
-                if (!state.matchedPersonChanged && state.updateStats) {
-                    this.displayNewlyEarnedAchievements(stats.acv);
-                }
-                
-                this.previousAchievements = stats.acv;
-            });
+                    // adapt UI: don't display the graph to children like Anakin
+                    if (state.currentlyMatchedPerson === KNOWN_PERSONS.ANAKIN) {
+                        if (this.graphGroup) {
+                            this.graphGroup.remove();
+                        }
+                    } else {
+                        this.displayGraph(stats.tbh, colors, state.statsPanelCurrentPosition, errorCase1, errorCase2);
+                    }
+                    this.displayAchievements(state.style, state.accentColor, stats.acv, state.statsPanelCurrentPosition, errorCase1, errorCase2);
 
+                    if (!state.matchedPersonChanged && state.updateStats) {
+                        this.displayNewlyEarnedAchievements(stats.acv);
+                    }
+
+                    if (state.statsPanelPositionChanged) {
+                        this.moveTo(state.statsPanelCurrentPosition);
+                    }
+
+                    this.previousAchievements = stats.acv;
+                });
+
+        } else if (state.statsPanelPositionChanged) {
+            this.moveTo(state.statsPanelCurrentPosition);
         }
     }
 
@@ -76,7 +88,7 @@ class StatsPanel {
         }
     }
 
-    displayGraph(measures, colors) {
+    displayGraph(measures, colors, position, errorCase1, errorCase2) {
         if (this.graphGroup) {
             this.graphGroup.remove();
         }
@@ -114,6 +126,19 @@ class StatsPanel {
         });
 
         this.graphGroup = paper.group(...elements);
+
+        if (!errorCase1) {
+            let distance = 0;
+            if (position === POSITIONS.LEFT) {
+                distance = -SCREEN_WIDTH + 350;
+            }
+            this.graphGroup.transform(`t${distance},0`);
+        }
+        if (errorCase2) {
+            if (position === POSITIONS.RIGHT) {
+                this.graphGroup.transform(`t${-SCREEN_WIDTH + 350},0`);
+            }
+        }
     }
 
     displayNewlyEarnedAchievements(achievements) {
@@ -137,7 +162,7 @@ class StatsPanel {
         }, 6000);
     }
 
-    displayAchievements(style, accentColor, achievements) {
+    displayAchievements(style, accentColor, achievements, position, errorCase1, errorCase2) {
         if (this.iconGroup) {
             this.iconGroup.remove();
         }
@@ -160,6 +185,19 @@ class StatsPanel {
             yodaImg.attr({ opacity: 0.3 });
         }
         this.iconGroup = paper.g(text, chewbaccaImg, trooperImg, yodaImg);
+
+        if (!errorCase1) {
+            let distance = 0;
+            if (position === POSITIONS.LEFT) {
+                distance = -SCREEN_WIDTH + 350;
+            }
+            this.iconGroup.transform(`t${distance},0`);
+        }
+        if (errorCase2) {
+            if (position === POSITIONS.RIGHT) {
+                this.iconGroup.transform(`t${-SCREEN_WIDTH + 350},0`);
+            }
+        }
     }
 
 }
