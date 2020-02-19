@@ -92,12 +92,9 @@ def handle_camera_frame_event(json_input, methods=['POST']):
         if matched_person['name'] != None:
             log.warning(f"detected person: {matched_person['name']}")
 
-            # prevent restarting tooth brushing immediately after finishing it
-            if (now - BRUSHING_END).seconds > 10:
-                # only measure toothbrush duration for the given list of persons
-                # TODO: comment in
-                #if matched_person in [ "kylo", "leia", "rey", "luke", "anakin"]:
-                #    measure_tooth_brush_duration(bounding_boxes, matched_person)
+            # Prevent restarting tooth brushing immediately after finishing it.
+            # Also, only measure toothbrush duration for the given list of persons.
+            if ((now - BRUSHING_END).seconds > 10) and (matched_person['name'] in [ "kylo", "leia", "rey", "luke", "anakin"]):
                 measure_tooth_brush_duration(bounding_boxes, matched_person['name'])
 
         json_response = json.dumps({
@@ -120,17 +117,20 @@ def measure_tooth_brush_duration(bounding_boxes, matched_person):
     now = datetime.datetime.now()
 
     for obj in bounding_boxes:
-        if obj['class'] == 'cell phone':
-            log.warning('detected smartphone')
-            _h = obj['bounding_box']['ymax'] - obj['bounding_box']['ymin']
-            _w = obj['bounding_box']['xmax'] - obj['bounding_box']['xmin']
+        if obj['class'] == 'cup':
+            log.warning('detected object indicating the start of toothbrushing')
+            #_h = obj['bounding_box']['ymax'] - obj['bounding_box']['ymin']
+            #_w = obj['bounding_box']['xmax'] - obj['bounding_box']['xmin']
 
-
+            # originally:
+            #if (_h > _w) and (IS_BRUSHING == False):
             if (IS_BRUSHING == False) and ((now - BRUSHING_END).seconds > 10):
                 log.warning('started toothbrushing')
                 IS_BRUSHING = True
                 BRUSHING_START = now
             
+            # originally:
+            #if (IS_BRUSHING == True) and ((now - BRUSHING_START).seconds > 5) and (_w > _h):
             if (IS_BRUSHING == True) and ((now - BRUSHING_START).seconds > 5):
                 log.warning('stopped toothbrushing')
                 IS_BRUSHING = False
