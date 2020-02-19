@@ -147,15 +147,14 @@ class RuleInterpreter {
         if (now - this.state.positionChangedLastTime > 5000) {
             if (this.state.sidePanelCurrentPosition !== newPosition) {
                 this.state.sidePanelPositionChanged = true;
-                this.state.sidePanelPreviousPosition = this.state.sidePanelCurrentPosition;
-                this.state.sidePanelCurrentPosition = newPosition;
-
                 this.state.statsPanelPositionChanged = true;
-                this.state.statsPanelPreviousPosition = this.state.statsPanelCurrentPosition;
-                this.state.statsPanelCurrentPosition = newPosition;
-
                 this.state.positionChangedLastTime = now;
             }
+            this.state.sidePanelPreviousPosition = this.state.sidePanelCurrentPosition;
+            this.state.sidePanelCurrentPosition = newPosition;
+            this.state.statsPanelPreviousPosition = this.state.statsPanelCurrentPosition;
+            this.state.statsPanelCurrentPosition = newPosition;
         }
+
     }
 }
