@@ -28,8 +28,14 @@ class State {
         this.centerPanelPreviousPosition = POSITIONS.BOTTOM;
         this.centerPanelCurrentPosition = POSITIONS.BOTTOM;
         this.centerPanelPositionChanged = false;
+
+        this.sidePanelPreviousPosition = POSITIONS.RIGHT;
         this.sidePanelCurrentPosition = POSITIONS.RIGHT;
         this.sidePanelPositionChanged = false;
+
+        this.positionChangedLastTime = Date.now();
+
+        this.statsPanelPreviousPosition = POSITIONS.RIGHT;
         this.statsPanelCurrentPosition = POSITIONS.RIGHT;
         this.statsPanelPositionChanged = false;
 
@@ -56,7 +62,7 @@ class RuleInterpreter {
     }
 
     setAccentColorAndStyle(json) {
-        if (json.matchedPerson === KNOWN_PERSONS.KYLO) {
+        if (json.matchedPerson.name === KNOWN_PERSONS.KYLO) {
             this.state.style = 'Red';
             this.state.accentColor = '#E4281D';
         } else {
@@ -68,12 +74,12 @@ class RuleInterpreter {
     setMatchedPerson(json) {
         this.state.matchedPersonChanged = false;
         this.state.updateStats = false;
-        if (this.state.currentlyMatchedPerson !== json.matchedPerson) {
+        if (this.state.currentlyMatchedPerson !== json.matchedPerson.name) {
             this.state.matchedPersonChanged = true;
             this.state.updateStats = true;
         }
         this.state.previouslyMatchedPerson = this.state.currentlyMatchedPerson;
-        this.state.currentlyMatchedPerson = json.matchedPerson;
+        this.state.currentlyMatchedPerson = json.matchedPerson.name;
 
         this.state.currentlyMatchedPersonIsUnkown = false;
         this.state.currentlyNoMatchedPerson = false;
@@ -106,7 +112,7 @@ class RuleInterpreter {
             this.state.stopTimer = true;
         }
 
-        this.state.timerIsActive = json.isBrushing;        
+        this.state.timerIsActive = json.isBrushing;
     }
 
     setPanelsHiddenOrVisible() {
@@ -123,10 +129,36 @@ class RuleInterpreter {
         }
     }
 
-    setPanelPositions() {
+    setPanelPositions(json) {
         this.state.centerPanelPositionChanged = false;
         this.state.sidePanelPositionChanged = false;
         this.state.statsPanelPositionChanged = false;
-    }
 
+        if (json.boundingBoxes.length == 0) {
+            return;
+        }
+
+        const box = json.matchedPerson.boundingBox;
+        if (!box) {
+            return;
+        }
+
+        const centerBox = (box.left + box.right) / 2;
+        const newPosition = (centerBox < (300 * 0.4)) ? POSITIONS.LEFT : POSITIONS.RIGHT;
+        const now = Date.now();
+
+        if (now - this.state.positionChangedLastTime > 5000) {
+            if (this.state.sidePanelCurrentPosition !== newPosition) {
+                this.state.sidePanelPositionChanged = true;
+                this.state.sidePanelPreviousPosition = this.state.sidePanelCurrentPosition;
+                this.state.sidePanelCurrentPosition = newPosition;
+
+                this.state.statsPanelPositionChanged = true;
+                this.state.statsPanelPreviousPosition = this.state.statsPanelCurrentPosition;
+                this.state.statsPanelCurrentPosition = newPosition;
+
+                this.state.positionChangedLastTime = now;
+            }
+        }
+    }
 }

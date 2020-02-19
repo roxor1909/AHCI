@@ -89,8 +89,8 @@ def handle_camera_frame_event(json_input, methods=['POST']):
 
         # use face recognition to identify the person
         matched_person = face_recognition.match_person_in_image(np.array(img))
-        if matched_person != None:
-            log.warning(f'detected person: {matched_person}')
+        if matched_person['name'] != None:
+            log.warning(f"detected person: {matched_person['name']}")
 
             # prevent restarting tooth brushing immediately after finishing it
             if (now - BRUSHING_END).seconds > 10:
@@ -98,7 +98,7 @@ def handle_camera_frame_event(json_input, methods=['POST']):
                 # TODO: comment in
                 #if matched_person in [ "kylo", "leia", "rey", "luke", "anakin"]:
                 #    measure_tooth_brush_duration(bounding_boxes, matched_person)
-                measure_tooth_brush_duration(bounding_boxes, matched_person)
+                measure_tooth_brush_duration(bounding_boxes, matched_person['name'])
 
         json_response = json.dumps({
             'matchedPerson': matched_person,
@@ -126,12 +126,12 @@ def measure_tooth_brush_duration(bounding_boxes, matched_person):
             _w = obj['bounding_box']['xmax'] - obj['bounding_box']['xmin']
 
 
-            if (_h > _w) and (IS_BRUSHING == False):
+            if (IS_BRUSHING == False) and ((now - BRUSHING_END).seconds > 10):
                 log.warning('started toothbrushing')
                 IS_BRUSHING = True
                 BRUSHING_START = now
             
-            if (IS_BRUSHING == True) and ((now - BRUSHING_START).seconds > 5) and (_w > _h):
+            if (IS_BRUSHING == True) and ((now - BRUSHING_START).seconds > 5):
                 log.warning('stopped toothbrushing')
                 IS_BRUSHING = False
                 BRUSHING_END = now

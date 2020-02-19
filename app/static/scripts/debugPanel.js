@@ -52,10 +52,32 @@ class DebugPanel {
         const boundingBoxCanvasContext = this.boundingBoxCanvas.getContext('2d');
         boundingBoxCanvasContext.clearRect(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
 
-        json.boundingBoxes.forEach(el => {
+        for (let i = 0; i < json.boundingBoxes.length; i++) {
+            const element = json.boundingBoxes[i];
+            
+            if (element.class === 'person') {
+                const bb = element['bounding_box'];
+                const xDist = bb['xmax'] - bb['xmin'];
+                const yDist = bb['ymax'] - bb['ymin'];
+    
+                boundingBoxCanvasContext.strokeStyle = "#FF9900";
+                boundingBoxCanvasContext.lineWidth = 5;
+                boundingBoxCanvasContext.beginPath();
+                boundingBoxCanvasContext.rect(bb['xmin'], bb['ymin'], xDist, yDist);
+                boundingBoxCanvasContext.stroke();
+                break;
+            }
+
+        }
+
+/*        json.boundingBoxes.forEach(el => {
             if (el['class'] !== 'person') {
                 return;
             }
+
+            //if (el.score < 0.65) {
+              //  return;
+            //}
 
             const bb = el['bounding_box'];
             const xDist = bb['xmax'] - bb['xmin'];
@@ -66,7 +88,7 @@ class DebugPanel {
             boundingBoxCanvasContext.beginPath();
             boundingBoxCanvasContext.rect(bb['xmin'], bb['ymin'], xDist, yDist);
             boundingBoxCanvasContext.stroke();
-        });
+        });*/
     }
 
 }
