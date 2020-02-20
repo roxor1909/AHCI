@@ -11,8 +11,6 @@ RUN apt-get update && apt-get install -y \
  && rm -rf /var/lib/apt/lists/*
 
 COPY app/requirements-raspi.txt ./
-RUN pip install cython
-RUN pip install matplotlib
 RUN pip install -r requirements-raspi.txt
 
 COPY app/object_detection/pip_binaries/tflite_runtime-1.14.0-cp37-cp37m-linux_armv7l.whl ./tflite_runtime-1.14.0-cp37-cp37m-linux_armv7l.whl
