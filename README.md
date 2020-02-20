@@ -9,13 +9,26 @@
 
 ## Production
 
-### Docker
+1. Build the Docker image or pull the ready to run image from Docker Hub:
 
-```bash
-docker build -t ahci -f DockerfileRaspberryPi .
-docker run -p 8080:8080 ahci
-```
+   ```bash
+   # build:
+   docker build -t philenius/ahci-smart-mirror-project:arm-raspi-v2 -f DockerfileRaspberryPi .
 
+   # or pull:
+   docker pull philenius/ahci-smart-mirror-project:arm-raspi-v2
+   ```
+
+2. On Raspberry Pi: copy the startup script `start-smart-mirror` to `/home/pi/`. This startup script starts the Docker container and opens Chromium.
+
+3. On Raspberry Pi: add a cronjob to execute the startup script on every system reboot.
+   ```bash
+   crontab -e
+   ```
+   Add the following line:
+   ```
+   @reboot DISPLAY=:0 /home/pi/start-smart-mirror.sh > /home/pi/cron.log 2>&1
+   ```
 
 ## AUI aspects
 

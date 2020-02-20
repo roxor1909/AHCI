@@ -10,4 +10,3 @@ while true; do
 	/usr/bin/chromium-browser --kiosk --disable-translate "http://localhost:8080" --use-fake-ui-for-media-stream --test-type --force-device-scale-factor=1.0
         echo "chromium stopped"
 done
-
