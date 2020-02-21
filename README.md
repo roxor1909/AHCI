@@ -9,7 +9,11 @@
 
 ## Production
 
-1. Build the Docker image or pull the ready to run image from Docker Hub:
+1. Install [Docker on the Raspberry Pi](https://www.docker.com/blog/happy-pi-day-docker-raspberry-pi/).
+
+2. Ideally, connect the official Raspberry Pi Camera Module and [configure it](https://desertbot.io/blog/how-to-stream-the-picamera). Alternatively, every USB webcam should work.
+
+3. Build the Docker image or pull the ready to run image from Docker Hub:
 
    ```bash
    # build:
@@ -19,9 +23,9 @@
    docker pull philenius/ahci-smart-mirror-project:arm-raspi-v2
    ```
 
-2. On Raspberry Pi: copy the startup script `start-smart-mirror` to `/home/pi/`. This startup script starts the Docker container and opens Chromium.
+4. Copy the startup script `start-smart-mirror` to `/home/pi/`. This startup script starts the Docker container and opens Chromium with every reboot of the Raspberry Pi.
 
-3. On Raspberry Pi: add a cronjob to execute the startup script on every system reboot.
+5. Add a cronjob to execute the startup script on every system reboot.
    ```bash
    crontab -e
    ```
@@ -35,7 +39,7 @@
 * Depending on the detected user, the UI changes its appearance (colors, change displayed name, change statistics).
 * Depending on the users position in front of the screen / mirror, the panels of the UI are moved to another position.
 * The UI classifies users into different personas: child, adult or senior. Depending on the persona, different UI elements are visualized.
-* Design language of the UI is strongly inspired by the original user interfaces from the Star Wars movies. See
+* Design language of the UI is strongly inspired by the original user interfaces from the Star Wars movies. See [The X-Wing vs TIE-Fighter game reboot you wish we had](https://www.slashgear.com/the-x-wing-vs-tie-fighter-game-reboot-you-wish-we-had-18423524/).
 
 ## SVG
 
