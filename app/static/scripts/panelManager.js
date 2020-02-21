@@ -15,7 +15,6 @@ class PanelManager {
         this.socketConnection();
 
         this.lastIsBrushing = false;
-        //this.dummyAnimation();
     }
 
     socketConnection() {
@@ -49,31 +48,5 @@ class PanelManager {
             this.debugPanel.adaptTo(state, json);
         });
 
-    }
-
-    dummyAnimation() {
-        this.debugPanel.show();
-        this.sidePanel.hide();
-        this.centerPanel.hide();
-        this.statsPanel.hide();
-
-        setTimeout(() => {
-            this.debugPanel.hide();
-            this.sidePanel.adaptTo(KNOWN_PERSONS.ANAKIN, POSITIONS.LEFT);
-            this.centerPanel.adaptTo(KNOWN_PERSONS.ANAKIN);
-            this.centerPanel.startTimer();
-            this.statsPanel.adaptTo(KNOWN_PERSONS.ANAKIN, POSITIONS.LEFT);
-        }, 4000);
-        setTimeout(() => {
-            this.centerPanel.adaptTo(KNOWN_PERSONS.ANAKIN, POSITIONS.TOP);
-        }, 6000);
-        setTimeout(() => {
-            this.sidePanel.adaptTo(KNOWN_PERSONS.KYLO, POSITIONS.RIGHT);
-            this.centerPanel.adaptTo(KNOWN_PERSONS.KYLO, POSITIONS.BOTTOM);
-            this.statsPanel.adaptTo(KNOWN_PERSONS.KYLO, POSITIONS.RIGHT);
-        }, 9000);
-        setTimeout(() => {
-            this.centerPanel.stopTimer();
-        }, 15000);
     }
 }
