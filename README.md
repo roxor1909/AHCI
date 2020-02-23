@@ -1,11 +1,13 @@
 # AHCI
 
 - [AHCI](#ahci)
+  - [Production](#production)
   - [Development](#development)
     - [Docker](#docker)
     - [Native](#native)
       - [For bash](#for-bash)
       - [For powershell (Windows 🎉)](#for-powershell-windows-%f0%9f%8e%89)
+  - [Notes](#notes)
 
 ## Production
 
@@ -33,30 +35,6 @@
    ```
    @reboot DISPLAY=:0 /home/pi/start-smart-mirror.sh > /home/pi/cron.log 2>&1
    ```
-
-## AUI aspects
-
-* Depending on the detected user, the UI changes its appearance (colors, change displayed name, change statistics).
-* Depending on the users position in front of the screen / mirror, the panels of the UI are moved to another position.
-* The UI classifies users into different personas: child, adult or senior. Depending on the persona, different UI elements are visualized.
-* Design language of the UI is strongly inspired by the original user interfaces from the Star Wars movies. See [The X-Wing vs TIE-Fighter game reboot you wish we had](https://www.slashgear.com/the-x-wing-vs-tie-fighter-game-reboot-you-wish-we-had-18423524/).
-
-## SVG
-
-* Use JS lib Snap.svg:
-  * Built-in animations
-  * Supports GIF and videos
-  * Easily draw charts
-* Create SVG files in Gravit Designer
-* Manually integrate fonts into SVG files (base64 encoded because all other options didn't work)
-* Color Palette:
-  * Green bright: #40e5ad
-  * Green dark: #19bfa9
-  * Red bright: #e4281d
-  * Red dark: #b5060d
-
-* Ursprünglich mit Matploblib im Backend geplottet. Caching Problem
-* Idee mit Persona: child, adult, senior
 
 ## Development
 
@@ -107,3 +85,14 @@ docker run -p 8080:8080 -v $(pwd):/usr/src/app ahci
    ```
 
    > Or simply run the start.ps1 script
+
+
+## Notes
+
+* All SVG graphics were edited with [Gravit Designer](https://www.designer.io/).
+* Attention: the SVG graphics were manually edited after exporting them from Gravit Designer in order to integrate fonts. This steps is required because the fonts used inside the SVG files do not represent standard fonts and are therefore not installed on most systems.
+* Color Palette:
+  * Bright green: `#40e5ad`
+  * Dark green: `#19bfa9`
+  * Bright red: `#e4281d`
+  * Dark red: `#b5060d`
